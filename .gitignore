@@ -1,0 +1,5 @@
+/build/
+/nbproject/private/
+*.log
+twitter4j.properties
+sqlite3.db
