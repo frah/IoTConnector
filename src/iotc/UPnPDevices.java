@@ -1,11 +1,15 @@
 package iotc;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import javax.persistence.Persistence;
-import org.itolab.morihit.clinkx.*;
+import iotc.db.Device;
+import iotc.db.DeviceJpaController;
+import iotc.db.JCF;
 import iotc.event.UPnPEventListener;
-import iotc.db.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.itolab.morihit.clinkx.UPnPControlPoint;
+import org.itolab.morihit.clinkx.UPnPDeviceChangeListener;
+import org.itolab.morihit.clinkx.UPnPRemoteDevice;
+import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
 /**
  * UPnPデバイスを管理するクラス
@@ -15,6 +19,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     /* UPnP */
     private final UPnPControlPoint controlPoint;
     private ArrayList<UPnPEventListener> listeners;
+    private DeviceJpaController cDevice;
 
     private static final UPnPDevices instance;
     static {
@@ -31,7 +36,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     private UPnPDevices() {
         listeners = new ArrayList();
 
-        DeviceJpaController cDevice = JCF.createController(DeviceJpaController.class);
+        cDevice = JCF.createController(DeviceJpaController.class);
 
         /* UPnP購読スレッドを開始 */
         controlPoint = new UPnPControlPoint();
@@ -69,7 +74,17 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
      */
     @Override
     public void deviceAdded(UPnPRemoteDevice upprd) {
-        // TODO: implement this
+        Device d = cDevice.findDevice(upprd.getUDN());
+        if (d != null) {
+            for (UPnPEventListener l : listeners) {
+                l.onDetectKnownDevice(d);
+            }
+        } else {
+            for (UPnPEventListener l : listeners) {
+                d = new Device(upprd);
+                l.onDetectNewDevice(d);
+            }
+        }
     }
 
     /**
@@ -80,11 +95,17 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
      */
     @Override
     public void deviceRemoved(UPnPRemoteDevice upprd) {
-        // TODO: implement
-        /*
-         * DB参照→登録があればそのDeviceレコードを，
-         * なければレコードを生成して#onFailDevice()を呼ぶ
-         */
+        Device d = cDevice.findDevice(upprd.getUDN());
+        if (d != null) {
+            for (UPnPEventListener l : listeners) {
+                l.onFailDevice(d);
+            }
+        } else {
+            for (UPnPEventListener l : listeners) {
+                d = new Device(upprd);
+                l.onFailDevice(d);
+            }
+        }
     }
 
     @Override

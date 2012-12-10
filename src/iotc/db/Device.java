@@ -1,10 +1,12 @@
 package iotc.db;
 
+import iotc.type.DeviceType;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 
 /**
  * デバイスのエンティティ
@@ -18,9 +20,15 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Device.findAll", query = "SELECT d FROM Device d"),
     @NamedQuery(name = "Device.findById", query = "SELECT d FROM Device d WHERE d.id = :id"),
     @NamedQuery(name = "Device.findByName", query = "SELECT d FROM Device d WHERE d.name = :name"),
-    @NamedQuery(name = "Device.findByType", query = "SELECT d FROM Device d WHERE d.type = :type"),
+    @NamedQuery(name = "Device.findByUDN", query = "SELECT d FROM Device d WHERE d.udn = :udn"),
     @NamedQuery(name = "Device.findByExplanation", query = "SELECT d FROM Device d WHERE d.explanation = :explanation")})
 public class Device implements Serializable {
+    @Basic(optional = false)
+    @Column(name = "UDN", nullable = false, length = 255)
+    private String udn;
+    @Basic(optional = false)
+    @Column(name = "type", nullable = false)
+    private int type;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +38,6 @@ public class Device implements Serializable {
     @Basic(optional = false)
     @Column(name = "name", nullable = false, length = 255)
     private String name;
-    @Basic(optional = false)
-    @Column(name = "type", nullable = false, length = 255)
-    private String type;
     @Column(name = "explanation", length = 255)
     private String explanation;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "deviceId")
@@ -50,10 +55,20 @@ public class Device implements Serializable {
         this.id = id;
     }
 
-    public Device(Integer id, String name, String type) {
+    public Device(Integer id, String name, String UDN) {
         this.id = id;
         this.name = name;
-        this.type = type;
+        this.udn = UDN;
+    }
+
+    public Device(UPnPRemoteDevice upprd) {
+        this.name = upprd.getFriendlyName();
+        this.udn = upprd.getUDN();
+        if (upprd.getFriendlyName().startsWith("SunSPOT")) {
+            this.type = DeviceType.SunSPOT.getId();
+        } else {
+            this.type = DeviceType.Other.getId();
+        }
     }
 
     public Integer getId() {
@@ -70,14 +85,6 @@ public class Device implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getExplanation() {
@@ -137,6 +144,22 @@ public class Device implements Serializable {
     @Override
     public String toString() {
         return "iotc.db.Device[ id=" + id + " ]";
+    }
+
+    public String getUdn() {
+        return udn;
+    }
+
+    public void setUdn(String udn) {
+        this.udn = udn;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
 }

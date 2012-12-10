@@ -268,6 +268,18 @@ public class DeviceJpaController implements Serializable {
         }
     }
 
+    public Device findDevice(String udn) {
+        EntityManager em = getEntityManager();
+
+        try {
+            return (Device)em.createNamedQuery("Device.findByUDN").setParameter("udn", udn).getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
     public int getDeviceCount() {
         EntityManager em = getEntityManager();
         try {

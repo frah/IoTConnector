@@ -59,10 +59,12 @@ CREATE TABLE `device` (
     `id` integer unsigned NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `room_id` integer unsigned NOT NULL,
-    `type` varchar(255) NOT NULL,
+    `UDN` varchar(255) NOT NULL,
+    `type` integer(1) NOT NULL,
     `explanation` varchar(255) DEFAULT '',
     PRIMARY KEY (`id`),
     KEY `name` (`name`),
+    KEY `UDN` (`UDN`),
     FOREIGN KEY (`room_id`) REFERENCES room (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 
