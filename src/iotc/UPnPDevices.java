@@ -2,8 +2,10 @@ package iotc;
 
 import java.util.Arrays;
 import java.util.ArrayList;
+import javax.persistence.Persistence;
 import org.itolab.morihit.clinkx.*;
 import iotc.event.UPnPEventListener;
+import iotc.db.*;
 
 /**
  * UPnPデバイスを管理するクラス
@@ -28,6 +30,9 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     }
     private UPnPDevices() {
         listeners = new ArrayList();
+
+        DeviceJpaController cDevice = JCF.createController(DeviceJpaController.class);
+
         /* UPnP購読スレッドを開始 */
         controlPoint = new UPnPControlPoint();
         controlPoint.setDeviceChangeListener(this);

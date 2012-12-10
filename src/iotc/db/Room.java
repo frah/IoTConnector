@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author atsushi-o
  */
 @Entity
+@EntityListeners(iotc.event.JpaEventListener.class)
 @Table(name = "room", catalog = "iotc", schema = "")
 @XmlRootElement
 @NamedQueries({

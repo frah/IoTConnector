@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author atsushi-o
  */
 @Entity
+@EntityListeners(iotc.event.JpaEventListener.class)
 @Table(name = "power", catalog = "iotc", schema = "")
 @XmlRootElement
 @NamedQueries({

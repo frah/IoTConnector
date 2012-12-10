@@ -6,12 +6,8 @@
     <class>iotc.db.Device</class>
     <class>iotc.db.Command</class>
     <class>iotc.db.Sensor</class>
-    <class>iotc.db.Room_1</class>
     <class>iotc.db.Power</class>
-    <class>iotc.db.Device_1</class>
     <class>iotc.db.SensorType</class>
-    <class>iotc.db.Sensor_1</class>
-    <class>iotc.db.Command_1</class>
     <class>iotc.db.User</class>
     <class>iotc.db.StatisticValue</class>
     <class>iotc.db.SensorValue</class>

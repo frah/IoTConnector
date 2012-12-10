@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author atsushi-o
  */
 @Entity
+@EntityListeners(iotc.event.JpaEventListener.class)
 @Table(name = "sensor_value", catalog = "iotc", schema = "")
 @XmlRootElement
 @NamedQueries({

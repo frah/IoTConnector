@@ -1,6 +1,7 @@
 package iotc.db;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -11,6 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author atsushi-o
  */
 @Entity
+@EntityListeners(iotc.event.JpaEventListener.class)
 @Table(name = "user", catalog = "iotc", schema = "")
 @XmlRootElement
 @NamedQueries({
@@ -71,6 +73,23 @@ public class User implements Serializable {
 
     public void setAliasName(String aliasName) {
         this.aliasName = aliasName;
+    }
+
+    /**
+     * ユーザの別名のマップを返す
+     * <p>aliasはmedium:aliasの書式が,で区切られた形式</p>
+     * <p>パースしてメディア名をKeyとするHashMapを生成</p>
+     * @return メディア名をKey，別名をValueとするHashMap
+     */
+    public HashMap<String,String> getAliasMap() {
+        HashMap<String,String> ret = new HashMap();
+        String alias = getAliasName();
+        String[] ss = alias.split(",");
+        for (String s : ss) {
+            String a[] = s.split(":");
+            ret.put(a[0], a[1]);
+        }
+        return ret;
     }
 
     @XmlTransient
