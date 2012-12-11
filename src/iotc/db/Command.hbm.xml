@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.Command" table="command" catalog="iotc">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="device" class="iotc.db.Device" fetch="select">
+            <column name="device_id" not-null="true" />
+        </many-to-one>
+        <property name="name" type="string">
+            <column name="name" not-null="true" />
+        </property>
+        <property name="type" type="int">
+            <column name="type" not-null="true" />
+        </property>
+        <property name="power" type="int">
+            <column name="power" not-null="true" />
+        </property>
+        <property name="command" type="string">
+            <column name="command" length="65535" not-null="true" />
+        </property>
+        <property name="aliasName" type="string">
+            <column name="alias_name" unique="true" />
+        </property>
+        <set name="tasks" inverse="false" table="ref_task_command">
+            <key>
+                <column name="command" not-null="true" />
+            </key>
+            <many-to-many entity-name="iotc.db.Task">
+                <column name="task" not-null="true" />
+            </many-to-many>
+        </set>
+        <set name="logs" inverse="true">
+            <key>
+                <column name="com_id" />
+            </key>
+            <one-to-many class="iotc.db.Log" />
+        </set>
+    </class>
+</hibernate-mapping>

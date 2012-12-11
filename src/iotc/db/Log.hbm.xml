@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.Log" table="log" catalog="iotc">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="user" class="iotc.db.User" fetch="select">
+            <column name="user_id" not-null="true" />
+        </many-to-one>
+        <many-to-one name="log" class="iotc.db.Log" fetch="select">
+            <column name="relational_log" />
+        </many-to-one>
+        <many-to-one name="command" class="iotc.db.Command" fetch="select">
+            <column name="com_id" />
+        </many-to-one>
+        <property name="comVariable" type="string">
+            <column name="com_variable" length="65535" />
+        </property>
+        <property name="state" type="int">
+            <column name="state" not-null="true" />
+        </property>
+        <set name="logs" inverse="true">
+            <key>
+                <column name="relational_log" />
+            </key>
+            <one-to-many class="iotc.db.Log" />
+        </set>
+    </class>
+</hibernate-mapping>

@@ -3,3 +3,4 @@
 *.log
 twitter4j.properties
 sqlite3.db
+/dist/

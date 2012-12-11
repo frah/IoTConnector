@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/iotc</property>
+    <property name="hibernate.connection.username">iotc_admin</property>
+    <property name="hibernate.connection.password">admin</property>
+    <mapping resource="iotc/db/StatisticalMethod.hbm.xml"/>
+    <mapping resource="iotc/db/Room.hbm.xml"/>
+    <mapping resource="iotc/db/Term.hbm.xml"/>
+    <mapping resource="iotc/db/SensorType.hbm.xml"/>
+    <mapping resource="iotc/db/SensorValue.hbm.xml"/>
+    <mapping resource="iotc/db/Log.hbm.xml"/>
+    <mapping resource="iotc/db/StatisticValue.hbm.xml"/>
+    <mapping resource="iotc/db/Command.hbm.xml"/>
+    <mapping resource="iotc/db/Device.hbm.xml"/>
+    <mapping resource="iotc/db/Power.hbm.xml"/>
+    <mapping resource="iotc/db/User.hbm.xml"/>
+    <mapping resource="iotc/db/Task.hbm.xml"/>
+    <mapping resource="iotc/db/Sensor.hbm.xml"/>
+  </session-factory>
+</hibernate-configuration>

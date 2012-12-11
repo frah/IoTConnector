@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.Task" table="task" catalog="iotc">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="term" class="iotc.db.Term" fetch="select">
+            <column name="term" not-null="true" />
+        </many-to-one>
+        <property name="name" type="string">
+            <column name="name" not-null="true" />
+        </property>
+        <set name="commands" inverse="false" table="ref_task_command">
+            <key>
+                <column name="task" not-null="true" />
+            </key>
+            <many-to-many entity-name="iotc.db.Command">
+                <column name="command" not-null="true" />
+            </many-to-many>
+        </set>
+    </class>
+</hibernate-mapping>

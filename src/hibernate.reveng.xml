@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd">
+<hibernate-reverse-engineering>
+  <schema-selection match-catalog="iotc"/>
+  <table-filter match-name="ref_term_method"/>
+  <table-filter match-name="statistical_method"/>
+  <table-filter match-name="device"/>
+  <table-filter match-name="task"/>
+  <table-filter match-name="sensor_value"/>
+  <table-filter match-name="log"/>
+  <table-filter match-name="term"/>
+  <table-filter match-name="ref_task_command"/>
+  <table-filter match-name="statistic_value"/>
+  <table-filter match-name="command"/>
+  <table-filter match-name="sensor"/>
+  <table-filter match-name="power"/>
+  <table-filter match-name="ref_term_sensor"/>
+  <table-filter match-name="ref_method_sensor"/>
+  <table-filter match-name="user"/>
+  <table-filter match-name="room"/>
+  <table-filter match-name="sensor_type"/>
+</hibernate-reverse-engineering>

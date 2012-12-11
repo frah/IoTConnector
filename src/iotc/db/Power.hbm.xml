@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.Power" table="power" catalog="iotc">
+        <id name="userId" type="int">
+            <column name="user_id" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="userByUserId" class="iotc.db.User" update="false" insert="false" fetch="select">
+            <column name="user_id" not-null="true" unique="true" />
+        </many-to-one>
+        <many-to-one name="userByAuthBy" class="iotc.db.User" fetch="select">
+            <column name="auth_by" />
+        </many-to-one>
+        <property name="power" type="int">
+            <column name="power" not-null="true" />
+        </property>
+        <property name="prevPower" type="java.lang.Integer">
+            <column name="prev_power" />
+        </property>
+        <property name="type" type="int">
+            <column name="type" not-null="true" />
+        </property>
+        <property name="period" type="java.lang.Integer">
+            <column name="period" />
+        </property>
+    </class>
+</hibernate-mapping>

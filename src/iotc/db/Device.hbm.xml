@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.Device" table="device" catalog="iotc">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="room" class="iotc.db.Room" fetch="select">
+            <column name="room_id" not-null="true" />
+        </many-to-one>
+        <property name="name" type="string">
+            <column name="name" not-null="true" />
+        </property>
+        <property name="udn" type="string">
+            <column name="UDN" not-null="true" />
+        </property>
+        <property name="type" type="int">
+            <column name="type" not-null="true" />
+        </property>
+        <property name="explanation" type="string">
+            <column name="explanation" />
+        </property>
+        <set name="commands" inverse="true">
+            <key>
+                <column name="device_id" not-null="true" />
+            </key>
+            <one-to-many class="iotc.db.Command" />
+        </set>
+        <set name="sensors" inverse="true">
+            <key>
+                <column name="device_id" not-null="true" />
+            </key>
+            <one-to-many class="iotc.db.Sensor" />
+        </set>
+    </class>
+    <query name="Device.findAll">
+        <![CDATA[
+        from iotc.db.Device
+        ]]>
+    </query>
+    <query name="Device.findFromUDN">
+        <![CDATA[
+        from iotc.db.Device as device where device.udn = :udn
+        ]]>
+    </query>
+</hibernate-mapping>

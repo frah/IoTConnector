@@ -1,8 +1,7 @@
 package iotc;
 
 import iotc.db.Device;
-import iotc.db.DeviceJpaController;
-import iotc.db.JCF;
+import iotc.db.HibernateUtil;
 import iotc.event.UPnPEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +9,7 @@ import org.itolab.morihit.clinkx.UPnPControlPoint;
 import org.itolab.morihit.clinkx.UPnPDeviceChangeListener;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
+import org.hibernate.Session;
 
 /**
  * UPnPデバイスを管理するクラス
@@ -19,7 +19,6 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     /* UPnP */
     private final UPnPControlPoint controlPoint;
     private ArrayList<UPnPEventListener> listeners;
-    private DeviceJpaController cDevice;
 
     private static final UPnPDevices instance;
     static {
@@ -35,8 +34,6 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     }
     private UPnPDevices() {
         listeners = new ArrayList();
-
-        cDevice = JCF.createController(DeviceJpaController.class);
 
         /* UPnP購読スレッドを開始 */
         controlPoint = new UPnPControlPoint();
@@ -74,7 +71,8 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
      */
     @Override
     public void deviceAdded(UPnPRemoteDevice upprd) {
-        Device d = cDevice.findDevice(upprd.getUDN());
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        Device d = (Device)s.getNamedQuery("Device.findFromUDN").setString("udn", upprd.getUDN()).uniqueResult();
         if (d != null) {
             for (UPnPEventListener l : listeners) {
                 l.onDetectKnownDevice(d);
@@ -85,6 +83,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
                 l.onDetectNewDevice(d);
             }
         }
+        s.close();
     }
 
     /**
@@ -95,7 +94,8 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
      */
     @Override
     public void deviceRemoved(UPnPRemoteDevice upprd) {
-        Device d = cDevice.findDevice(upprd.getUDN());
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        Device d = (Device)s.getNamedQuery("Device.findFromUDN").setString("udn", upprd.getUDN()).uniqueResult();
         if (d != null) {
             for (UPnPEventListener l : listeners) {
                 l.onFailDevice(d);
@@ -106,6 +106,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
                 l.onFailDevice(d);
             }
         }
+        s.close();
     }
 
     @Override

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.SensorValue" table="sensor_value" catalog="iotc">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <timestamp name="timestamp" column="timestamp" />
+        <many-to-one name="sensor" class="iotc.db.Sensor" fetch="select">
+            <column name="sensor" not-null="true" />
+        </many-to-one>
+        <property name="value" type="double">
+            <column name="value" precision="22" scale="0" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

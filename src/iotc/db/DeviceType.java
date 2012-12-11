@@ -1,4 +1,4 @@
-package iotc.type;
+package iotc.db;
 
 /**
  *

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<hibernate-mapping>
+    <class name="iotc.db.User" table="user" catalog="iotc">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="name" type="string">
+            <column name="name" not-null="true" />
+        </property>
+        <property name="aliasName" type="string">
+            <column name="alias_name" length="65535" />
+        </property>
+        <set name="logs" inverse="true">
+            <key>
+                <column name="user_id" not-null="true" />
+            </key>
+            <one-to-many class="iotc.db.Log" />
+        </set>
+        <set name="powersForAuthBy" inverse="true">
+            <key>
+                <column name="auth_by" />
+            </key>
+            <one-to-many class="iotc.db.Power" />
+        </set>
+        <set name="powersForUserId" inverse="true">
+            <key>
+                <column name="user_id" not-null="true" unique="true" />
+            </key>
+            <one-to-many class="iotc.db.Power" />
+        </set>
+    </class>
+</hibernate-mapping>
