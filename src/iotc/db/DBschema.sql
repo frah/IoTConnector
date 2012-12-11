@@ -52,7 +52,8 @@ CREATE TABLE `room` (
     `name` varchar(255) NOT NULL,
     `explanation` varchar(255) DEFAULT '',
     PRIMARY KEY (`id`),
-    KEY `name` (`name`)
+    KEY `name` (`name`),
+    UNIQUE (`name`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 
 CREATE TABLE `device` (
