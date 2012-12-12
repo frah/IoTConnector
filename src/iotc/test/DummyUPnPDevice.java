@@ -21,7 +21,7 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
         this("Dummy-"+UUID.randomUUID().toString());
     }
     public DummyUPnPDevice(String deviceName) {
-        device = new UPnPDevice(deviceName);
+        device = new FixedUdnUPnPDevice(deviceName);
 
         temp = new UPnPFloatStateVariable("Temperature");
         illum = new UPnPFloatStateVariable("Illuminance");
