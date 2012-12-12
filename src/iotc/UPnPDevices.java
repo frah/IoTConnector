@@ -5,11 +5,11 @@ import iotc.db.HibernateUtil;
 import iotc.event.UPnPEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.hibernate.Session;
 import org.itolab.morihit.clinkx.UPnPControlPoint;
 import org.itolab.morihit.clinkx.UPnPDeviceChangeListener;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
-import org.hibernate.Session;
 
 /**
  * UPnPデバイスを管理するクラス
@@ -79,8 +79,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
             }
         } else {
             for (UPnPEventListener l : listeners) {
-                d = new Device(upprd);
-                l.onDetectNewDevice(d);
+                l.onDetectNewDevice(upprd);
             }
         }
         s.close();

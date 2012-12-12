@@ -21,4 +21,9 @@
             <one-to-many class="iotc.db.Sensor" />
         </set>
     </class>
+    <query name="SensorType.findAll">
+        <![CDATA[
+        from iotc.db.SensorType
+        ]]>
+    </query>
 </hibernate-mapping>

@@ -1,6 +1,7 @@
 package iotc.event;
 
 import iotc.db.Device;
+import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 
 /**
  * UPnPイベントのリスナ
@@ -11,7 +12,7 @@ public interface UPnPEventListener {
      * 新しいUPnPデバイスが検出された時
      * @param device
      */
-    void onDetectNewDevice(Device device);
+    void onDetectNewDevice(UPnPRemoteDevice device);
     /**
      * 既存のUPnPデバイスが検出された時
      * @param device

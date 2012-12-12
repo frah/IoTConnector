@@ -32,7 +32,7 @@ public class SensorType  implements java.io.Serializable {
     public SensorType() {
     }
 
-	
+
     public SensorType(String name, String unit) {
         this.name = name;
         this.unit = unit;
@@ -42,32 +42,32 @@ public class SensorType  implements java.io.Serializable {
        this.unit = unit;
        this.sensors = sensors;
     }
-   
+
      @Id @GeneratedValue(strategy=IDENTITY)
-    
+
     @Column(name="id", unique=true, nullable=false)
     public Integer getId() {
         return this.id;
     }
-    
+
     public void setId(Integer id) {
         this.id = id;
     }
-    
+
     @Column(name="name", nullable=false)
     public String getName() {
         return this.name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     @Column(name="unit", nullable=false, length=32)
     public String getUnit() {
         return this.unit;
     }
-    
+
     public void setUnit(String unit) {
         this.unit = unit;
     }
@@ -75,14 +75,15 @@ public class SensorType  implements java.io.Serializable {
     public Set getSensors() {
         return this.sensors;
     }
-    
+
     public void setSensors(Set sensors) {
         this.sensors = sensors;
     }
 
-
-
-
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }
 
 
