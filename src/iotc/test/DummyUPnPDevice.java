@@ -13,7 +13,7 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
     private final UPnPDevice device;
     private boolean isStop = false;
 
-    private UPnPIntegerStateVariable    illum;
+    private UPnPFloatStateVariable    illum;
     private UPnPFloatStateVariable      temp;
     private UPnPFloatStateVariable      hum;
 
@@ -24,7 +24,7 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
         device = new UPnPDevice(deviceName);
 
         temp = new UPnPFloatStateVariable("Temperature");
-        illum = new UPnPIntegerStateVariable("Illuminance");
+        illum = new UPnPFloatStateVariable("Illuminance");
         hum = new UPnPFloatStateVariable("Humidity");
 
         UPnPService service = new UPnPService();
@@ -72,7 +72,7 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
             ttemp += r.nextInt(4) + r.nextFloat() - 2.0f;
             temp.setValue(ttemp);
 
-            int tillum = illum.getValue();
+            float tillum = illum.getValue();
             tillum += r.nextInt(200) - 100;
             illum.setValue(tillum);
 
@@ -87,4 +87,17 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
 
         device.stop();
     }
+
+    public float getTemperature() {
+        return temp.getValue();
+    }
+    public void setTemperature(float f) {}
+    public float getIlluminance() {
+        return illum.getValue();
+    }
+    public void setIlluminance(float i) {}
+    public float getHumidity() {
+        return hum.getValue();
+    }
+    public void setHumidity(float f) {}
 }
