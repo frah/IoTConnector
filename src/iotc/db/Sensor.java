@@ -1,5 +1,5 @@
 package iotc.db;
-// Generated 2012/12/11 18:19:43 by Hibernate Tools 3.2.1.GA
+// Generated 2012/12/12 23:32:12 by Hibernate Tools 3.2.1.GA
 
 
 import java.util.HashSet;
@@ -31,6 +31,7 @@ public class Sensor  implements java.io.Serializable {
      private Integer id;
      private Device device;
      private SensorType sensorType;
+     private String name;
      private Set terms = new HashSet(0);
      private Set sensorValues = new HashSet(0);
      private Set statisticalMethods = new HashSet(0);
@@ -38,26 +39,28 @@ public class Sensor  implements java.io.Serializable {
     public Sensor() {
     }
 
-	
-    public Sensor(Device device, SensorType sensorType) {
+
+    public Sensor(Device device, SensorType sensorType, String name) {
         this.device = device;
         this.sensorType = sensorType;
+        this.name = name;
     }
-    public Sensor(Device device, SensorType sensorType, Set terms, Set sensorValues, Set statisticalMethods) {
+    public Sensor(Device device, SensorType sensorType, String name, Set terms, Set sensorValues, Set statisticalMethods) {
        this.device = device;
        this.sensorType = sensorType;
+       this.name = name;
        this.terms = terms;
        this.sensorValues = sensorValues;
        this.statisticalMethods = statisticalMethods;
     }
-   
+
      @Id @GeneratedValue(strategy=IDENTITY)
-    
+
     @Column(name="id", unique=true, nullable=false)
     public Integer getId() {
         return this.id;
     }
-    
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -66,7 +69,7 @@ public class Sensor  implements java.io.Serializable {
     public Device getDevice() {
         return this.device;
     }
-    
+
     public void setDevice(Device device) {
         this.device = device;
     }
@@ -75,18 +78,27 @@ public class Sensor  implements java.io.Serializable {
     public SensorType getSensorType() {
         return this.sensorType;
     }
-    
+
     public void setSensorType(SensorType sensorType) {
         this.sensorType = sensorType;
     }
+
+    @Column(name="name", nullable=false)
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 @ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY)
-    @JoinTable(name="ref_term_sensor", catalog="iotc", joinColumns = { 
-        @JoinColumn(name="sensor", nullable=false, updatable=false) }, inverseJoinColumns = { 
+    @JoinTable(name="ref_term_sensor", catalog="iotc", joinColumns = {
+        @JoinColumn(name="sensor", nullable=false, updatable=false) }, inverseJoinColumns = {
         @JoinColumn(name="term", nullable=false, updatable=false) })
     public Set getTerms() {
         return this.terms;
     }
-    
+
     public void setTerms(Set terms) {
         this.terms = terms;
     }
@@ -94,18 +106,18 @@ public class Sensor  implements java.io.Serializable {
     public Set getSensorValues() {
         return this.sensorValues;
     }
-    
+
     public void setSensorValues(Set sensorValues) {
         this.sensorValues = sensorValues;
     }
 @ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY)
-    @JoinTable(name="ref_method_sensor", catalog="iotc", joinColumns = { 
-        @JoinColumn(name="sensor", nullable=false, updatable=false) }, inverseJoinColumns = { 
+    @JoinTable(name="ref_method_sensor", catalog="iotc", joinColumns = {
+        @JoinColumn(name="sensor", nullable=false, updatable=false) }, inverseJoinColumns = {
         @JoinColumn(name="method", nullable=false, updatable=false) })
     public Set getStatisticalMethods() {
         return this.statisticalMethods;
     }
-    
+
     public void setStatisticalMethods(Set statisticalMethods) {
         this.statisticalMethods = statisticalMethods;
     }

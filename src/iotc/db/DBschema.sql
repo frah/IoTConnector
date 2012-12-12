@@ -104,6 +104,7 @@ CREATE TABLE `sensor_type` (
 
 CREATE TABLE `sensor` (
     `id` integer unsigned NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
     `type` integer unsigned NOT NULL,
     `device_id` integer unsigned NOT NULL,
     PRIMARY KEY (`id`),

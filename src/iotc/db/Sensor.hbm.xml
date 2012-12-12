@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
+<!-- Generated 2012/12/12 23:32:12 by Hibernate Tools 3.2.1.GA -->
 <hibernate-mapping>
     <class name="iotc.db.Sensor" table="sensor" catalog="iotc">
         <id name="id" type="java.lang.Integer">
@@ -14,6 +14,9 @@
         <many-to-one name="sensorType" class="iotc.db.SensorType" fetch="select">
             <column name="type" not-null="true" />
         </many-to-one>
+        <property name="name" type="string">
+            <column name="name" not-null="true" />
+        </property>
         <set name="terms" inverse="false" table="ref_term_sensor">
             <key>
                 <column name="sensor" not-null="true" />
