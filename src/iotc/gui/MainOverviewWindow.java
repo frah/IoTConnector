@@ -16,7 +16,7 @@ import org.hibernate.Session;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 
 /**
- *
+ * メインウィンドウ
  * @author atsushi-o
  */
 public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventListener {

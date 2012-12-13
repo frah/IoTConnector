@@ -3,10 +3,13 @@ package iotc.gui;
 import iotc.db.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.table.TableColumn;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -15,8 +18,6 @@ import org.itolab.morihit.clinkx.UPnPRemoteAction;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteService;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
-import javax.swing.table.*;
-import javax.swing.DefaultCellEditor;
 
 /**
  * 新しいデバイスを追加するためのダイアログ
@@ -235,11 +236,30 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         device.setType(((DeviceType)typeCombo.getSelectedItem()).getId());
         device.setExplanation(explanationTextArea.getText());
 
+        UPnPActionTableModel actionModel = (UPnPActionTableModel)comTable.getModel();
+        UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
+
         Session s = HibernateUtil.getSessionFactory().openSession();
         Transaction t = s.beginTransaction();
-
         try {
-            s.save(device);
+            Serializable id = s.save(device);
+            Device d = (Device)s.load(Device.class, id);
+
+            for (int i = 0; i < actionModel.getRowCount(); i++) {
+                Command c = actionModel.getRowAt(i);
+                if (c != null) {
+                    c.setDevice(d);
+                    s.save(c);
+                }
+            }
+            for (int i = 0; i < varModel.getRowCount(); i++) {
+                Sensor sens = varModel.getRowAt(i);
+                if (sens != null) {
+                    sens.setDevice(d);
+                    s.save(sens);
+                }
+            }
+
             t.commit();
             isSuccess = true;
         } catch (HibernateException ex) {
