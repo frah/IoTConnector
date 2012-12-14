@@ -1,5 +1,6 @@
 package iotc.gui;
 
+import iotc.db.Command;
 import iotc.db.Device;
 import iotc.db.HibernateUtil;
 import iotc.db.Room;
@@ -7,19 +8,25 @@ import iotc.event.UPnPEventListener;
 import iotc.gui.ToolTipTree.ToolTipTreeNode;
 import java.util.Enumeration;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
+import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
 /**
  * メインウィンドウ
  * @author atsushi-o
  */
 public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventListener {
+    private Device lastRightClicked;
 
     /**
      * Creates new form MainOverviewWindow
@@ -48,6 +55,9 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        devicePopup = new javax.swing.JPopupMenu();
+        aComMenuItem = new javax.swing.JMenuItem();
+        dDelMenuItem = new javax.swing.JMenuItem();
         jSplitPane1 = new javax.swing.JSplitPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         roomTree = new ToolTipTree();
@@ -62,6 +72,22 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         quitMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
+        aComMenuItem.setText("Add command");
+        aComMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aComMenuItemActionPerformed(evt);
+            }
+        });
+        devicePopup.add(aComMenuItem);
+
+        dDelMenuItem.setText("Remove this");
+        dDelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dDelMenuItemActionPerformed(evt);
+            }
+        });
+        devicePopup.add(dDelMenuItem);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("IoTConnector");
 
@@ -72,6 +98,17 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         jScrollPane1.setPreferredSize(new java.awt.Dimension(130, 275));
 
         roomTree.setRootVisible(false);
+        roomTree.addTreeSelectionListener(new TreeSelectionListener(){
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                updateTable(e);
+            }
+        });
+        roomTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                roomTreeMouseReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(roomTree);
         updateTree();
 
@@ -194,51 +231,74 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
         this.dispose();
+        System.exit(0);
     }//GEN-LAST:event_quitMenuItemActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /*
-         * Set the Nimbus look and feel
-         */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the
-         * default look and feel. For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainOverviewWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainOverviewWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainOverviewWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainOverviewWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    private void roomTreeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_roomTreeMouseReleased
+        if (SwingUtilities.isRightMouseButton(evt)) {
+            TreePath path = roomTree.getPathForLocation(evt.getX(), evt.getY());
+            if (path == null) return;
+            Object o = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
+            if (!(o instanceof Device)) return;
+
+            lastRightClicked = (Device)o;
+            roomTree.setSelectionPath(path);
+            devicePopup.show(evt.getComponent(), evt.getX(), evt.getY());
         }
-        //</editor-fold>
+    }//GEN-LAST:event_roomTreeMouseReleased
 
-        /*
-         * Create and display the form
-         */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+    private void dDelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dDelMenuItemActionPerformed
+        if (lastRightClicked == null) return;
 
-            public void run() {
-                new MainOverviewWindow().setVisible(true);
-            }
-        });
-    }
+        if (JOptionPane.showConfirmDialog(this, "Delete anyway?", "IoTConnector", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) return;
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        s.beginTransaction();
+        try {
+            s.delete(lastRightClicked);
+            lastRightClicked = null;
+            s.getTransaction().commit();
+        } catch (org.hibernate.HibernateException ex) {
+            s.getTransaction().rollback();
+            JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            s.close();
+        }
+
+        updateTree();
+    }//GEN-LAST:event_dDelMenuItemActionPerformed
+
+    private void aComMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aComMenuItemActionPerformed
+        if (lastRightClicked == null) return;
+        UPnPRemoteDevice d = iotc.UPnPDevices.getInstance().getAvailableUPnPDevice(lastRightClicked.getUdn());
+        if (d == null) return;
+
+        NewCommandDialog ncd = new NewCommandDialog(this, true, d);
+        ncd.setVisible(true);
+
+        Command c = ncd.getNewCommand();
+        if (c == null) return;
+        c.setDevice(lastRightClicked);
+
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        s.beginTransaction();
+        try {
+            s.save(c);
+            s.getTransaction().commit();
+        } catch (org.hibernate.HibernateException ex) {
+            s.getTransaction().rollback();
+            JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            s.close();
+        }
+
+        updateTable(null);
+    }//GEN-LAST:event_aComMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aComMenuItem;
     private javax.swing.JMenuItem addRoomMenuItem;
+    private javax.swing.JMenuItem dDelMenuItem;
+    private javax.swing.JPopupMenu devicePopup;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -320,6 +380,14 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         model.reload();
     }
 
+    @Override
+    public void onUpdateValue(UPnPRemoteStateVariable upprsv) {
+        // TODO: update table value
+    }
+
+    /**
+     * 部屋のツリーを更新
+     */
     private void updateTree() {
         DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
@@ -344,7 +412,11 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         }
     }
 
-    private void updateTable(Device d) {
-
+    /**
+     * デバイスの詳細テーブル（コマンド，センサ）を更新する
+     * @param evt
+     */
+    private void updateTable(TreeSelectionEvent evt) {
+        Device d = (Device)((ToolTipTreeNode)roomTree.getSelectionPath().getLastPathComponent()).getUserObject();
     }
 }

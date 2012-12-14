@@ -38,7 +38,7 @@ public class NewSensorTypeDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("New SensorType");
+        setTitle("New SensorType - IoTConnector");
 
         jLabel1.setText("Name");
 

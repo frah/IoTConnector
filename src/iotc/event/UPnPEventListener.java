@@ -2,6 +2,7 @@ package iotc.event;
 
 import iotc.db.Device;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
+import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
 /**
  * UPnPイベントのリスナ
@@ -23,4 +24,9 @@ public interface UPnPEventListener {
      * @param device
      */
     void onFailDevice(Device device);
+    /**
+     * 変数の値が更新された時
+     * @param upprsv
+     */
+    void onUpdateValue(UPnPRemoteStateVariable upprsv);
 }

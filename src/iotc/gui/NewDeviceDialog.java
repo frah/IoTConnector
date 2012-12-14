@@ -67,7 +67,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("New Device");
+        setTitle("New Device - IoTConnector");
 
         jLabel1.setText("UDN");
 
@@ -307,6 +307,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
             }
         });
         ret.setBorder(BorderFactory.createEmptyBorder());
+        ret.setSelectedIndex(0);
         return ret;
     }
 

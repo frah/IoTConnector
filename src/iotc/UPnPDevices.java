@@ -5,6 +5,7 @@ import iotc.db.HibernateUtil;
 import iotc.event.UPnPEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import org.hibernate.Session;
 import org.itolab.morihit.clinkx.UPnPControlPoint;
 import org.itolab.morihit.clinkx.UPnPDeviceChangeListener;
@@ -18,6 +19,7 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 public class UPnPDevices implements UPnPDeviceChangeListener {
     /* UPnP */
     private final UPnPControlPoint controlPoint;
+    private HashMap<String, UPnPRemoteDevice> availableDevices;
     private ArrayList<UPnPEventListener> listeners;
 
     private static final UPnPDevices instance;
@@ -33,6 +35,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
         return UPnPDevices.instance;
     }
     private UPnPDevices() {
+        availableDevices = new HashMap();
         listeners = new ArrayList();
 
         /* UPnP購読スレッドを開始 */
@@ -64,6 +67,15 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     }
 
     /**
+     * 現在検出しているUPnPデバイスの実体を返す
+     * @param udn UPnPデバイスのUDN
+     * @return
+     */
+    public UPnPRemoteDevice getAvailableUPnPDevice(String udn) {
+        return availableDevices.get(udn);
+    }
+
+    /**
      * 新しいUPnPデバイスを検出した際に呼ばれる
      * <p>DBを参照し，既に登録されているデバイスであればそのレコードを#onDetectKnownDevice()イベントで返す．</p>
      * <p>登録がなければ，#onDetectNewDevice()を呼ぶ</p>
@@ -83,6 +95,8 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
             }
         }
         s.close();
+
+        availableDevices.put(upprd.getUDN(), upprd);
     }
 
     /**
@@ -93,6 +107,8 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
      */
     @Override
     public void deviceRemoved(UPnPRemoteDevice upprd) {
+        availableDevices.remove(upprd.getUDN());
+
         Session s = HibernateUtil.getSessionFactory().openSession();
         Device d = (Device)s.getNamedQuery("Device.findFromUDN").setString("udn", upprd.getUDN()).uniqueResult();
         if (d != null) {
@@ -109,5 +125,9 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     }
 
     @Override
-    public void deviceStateChanged(UPnPRemoteStateVariable upprsv) {}
+    public void deviceStateChanged(UPnPRemoteStateVariable upprsv) {
+        for (UPnPEventListener l : listeners) {
+            l.onUpdateValue(upprsv);
+        }
+    }
 }
