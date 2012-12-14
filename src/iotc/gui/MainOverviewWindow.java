@@ -80,6 +80,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         addRoomMenuItem = new javax.swing.JMenuItem();
         quitMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         aComMenuItem.setText("Add command");
         aComMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -206,6 +207,15 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         menuBar.add(jMenu1);
 
         jMenu2.setText("Help");
+
+        aboutMenuItem.setText("About");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(aboutMenuItem);
+
         menuBar.add(jMenu2);
 
         setJMenuBar(menuBar);
@@ -308,8 +318,13 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         updateTable(d);
     }//GEN-LAST:event_roomTreeValueChanged
 
+    private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
+        new AboutDialog(this, true).setVisible(true);
+    }//GEN-LAST:event_aboutMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aComMenuItem;
+    private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenuItem addRoomMenuItem;
     private javax.swing.JTable comTable;
     private javax.swing.JMenuItem dDelMenuItem;
