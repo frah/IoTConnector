@@ -78,7 +78,6 @@ CREATE TABLE `command` (
     `command` text NOT NULL,
     `alias_name` varchar(255),
     PRIMARY KEY (`id`),
-    UNIQUE (`alias_name`),
     FOREIGN KEY (`device_id`) REFERENCES device (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 

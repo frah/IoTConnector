@@ -24,7 +24,7 @@
             <column name="command" length="65535" not-null="true" />
         </property>
         <property name="aliasName" type="string">
-            <column name="alias_name" unique="true" />
+            <column name="alias_name" />
         </property>
         <set name="tasks" inverse="false" table="ref_task_command">
             <key>
