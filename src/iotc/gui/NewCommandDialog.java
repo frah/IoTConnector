@@ -12,8 +12,9 @@ import javax.swing.table.DefaultTableModel;
  * @author atsushi-o
  */
 public class NewCommandDialog extends javax.swing.JDialog {
-    UPnPRemoteDevice upprd;
-    Command ret;
+    private UPnPRemoteDevice upprd;
+    private Command ret;
+    private boolean isCancelled = true;
 
     /**
      * Creates new form NewCommandDialog
@@ -49,6 +50,11 @@ public class NewCommandDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("New Command - IoTConnector");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setText("Action");
 
@@ -197,6 +203,7 @@ public class NewCommandDialog extends javax.swing.JDialog {
     }
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        this.isCancelled = true;
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
@@ -246,11 +253,20 @@ public class NewCommandDialog extends javax.swing.JDialog {
         }
         ret.setCommand(sb.toString());
 
-        this.dispose();
+        this.isCancelled = false;
+        this.setVisible(false);
     }//GEN-LAST:event_okButtonActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        this.isCancelled = true;
+    }//GEN-LAST:event_formWindowClosing
 
     public Command getNewCommand() {
         return this.ret;
+    }
+
+    public boolean isCancelled() {
+        return this.isCancelled;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

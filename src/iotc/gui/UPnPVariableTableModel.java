@@ -104,8 +104,6 @@ public class UPnPVariableTableModel extends DefaultTableModel {
         }
     }
 
-
-
     public Sensor getRowAt(int row) {
         Sensor s = null;
 

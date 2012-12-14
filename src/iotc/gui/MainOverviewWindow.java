@@ -1,18 +1,19 @@
 package iotc.gui;
 
-import iotc.db.Command;
-import iotc.db.Device;
-import iotc.db.HibernateUtil;
-import iotc.db.Room;
+import iotc.UPnPException;
+import iotc.db.*;
 import iotc.event.UPnPEventListener;
 import iotc.gui.ToolTipTree.ToolTipTreeNode;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -26,7 +27,14 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
  * @author atsushi-o
  */
 public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventListener {
+    private Device currentView;
     private Device lastRightClicked;
+    private ArrayList<UPnPRemoteStateVariable> curSubscribe;
+
+    private static final Logger LOG;
+    static {
+        LOG = Logger.getLogger(MainOverviewWindow.class.getName());
+    }
 
     /**
      * Creates new form MainOverviewWindow
@@ -43,6 +51,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             // If Nimbus is not available, you can set the GUI to another look and feel.
         }
 
+        curSubscribe = new ArrayList();
         initComponents();
     }
 
@@ -63,9 +72,9 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         roomTree = new ToolTipTree();
         jSplitPane2 = new javax.swing.JSplitPane();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        comTable = new javax.swing.JTable();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        varTable = new javax.swing.JTable();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         addRoomMenuItem = new javax.swing.JMenuItem();
@@ -98,15 +107,14 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         jScrollPane1.setPreferredSize(new java.awt.Dimension(130, 275));
 
         roomTree.setRootVisible(false);
-        roomTree.addTreeSelectionListener(new TreeSelectionListener(){
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                updateTable(e);
-            }
-        });
         roomTree.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 roomTreeMouseReleased(evt);
+            }
+        });
+        roomTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                roomTreeValueChanged(evt);
             }
         });
         jScrollPane1.setViewportView(roomTree);
@@ -117,12 +125,9 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         jSplitPane2.setDividerLocation(250);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        comTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+
             },
             new String [] {
                 "ID", "Name", "Type", "Power", "Alias", "Command"
@@ -143,18 +148,15 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(jTable1);
-        jTable1.getColumnModel().getColumn(0).setMinWidth(6);
-        jTable1.getColumnModel().getColumn(0).setPreferredWidth(6);
+        jScrollPane2.setViewportView(comTable);
+        comTable.getColumnModel().getColumn(0).setResizable(false);
+        comTable.getColumnModel().getColumn(0).setPreferredWidth(20);
 
         jSplitPane2.setTopComponent(jScrollPane2);
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        varTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
                 "ID", "Type", "Value"
@@ -175,9 +177,9 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane3.setViewportView(jTable2);
-        jTable2.getColumnModel().getColumn(0).setMinWidth(6);
-        jTable2.getColumnModel().getColumn(0).setPreferredWidth(6);
+        jScrollPane3.setViewportView(varTable);
+        varTable.getColumnModel().getColumn(0).setResizable(false);
+        varTable.getColumnModel().getColumn(0).setPreferredWidth(20);
 
         jSplitPane2.setRightComponent(jScrollPane3);
 
@@ -273,30 +275,43 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         if (d == null) return;
 
         NewCommandDialog ncd = new NewCommandDialog(this, true, d);
-        ncd.setVisible(true);
 
-        Command c = ncd.getNewCommand();
-        if (c == null) return;
-        c.setDevice(lastRightClicked);
+        while (true) {
+            ncd.setVisible(true);
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
-        s.beginTransaction();
-        try {
-            s.save(c);
-            s.getTransaction().commit();
-        } catch (org.hibernate.HibernateException ex) {
-            s.getTransaction().rollback();
-            JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            s.close();
+            Command c = ncd.getNewCommand();
+            if (ncd.isCancelled() || c == null) break;
+            c.setDevice(lastRightClicked);
+
+            Session s = HibernateUtil.getSessionFactory().openSession();
+            s.beginTransaction();
+            try {
+                s.save(c);
+                s.getTransaction().commit();
+                break;
+            } catch (org.hibernate.HibernateException ex) {
+                s.getTransaction().rollback();
+                JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                s.close();
+            }
         }
+        ncd.dispose();
 
-        updateTable(null);
+        updateTable(lastRightClicked);
+        lastRightClicked = null;
     }//GEN-LAST:event_aComMenuItemActionPerformed
+
+    private void roomTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_roomTreeValueChanged
+        if (!(evt.getPath().getLastPathComponent() instanceof ToolTipTreeNode)) return;
+        Device d = (Device)((ToolTipTreeNode)evt.getPath().getLastPathComponent()).getUserObject();
+        updateTable(d);
+    }//GEN-LAST:event_roomTreeValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aComMenuItem;
     private javax.swing.JMenuItem addRoomMenuItem;
+    private javax.swing.JTable comTable;
     private javax.swing.JMenuItem dDelMenuItem;
     private javax.swing.JPopupMenu devicePopup;
     private javax.swing.JMenu jMenu1;
@@ -306,11 +321,10 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem quitMenuItem;
     private javax.swing.JTree roomTree;
+    private javax.swing.JTable varTable;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -382,7 +396,16 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
     @Override
     public void onUpdateValue(UPnPRemoteStateVariable upprsv) {
-        // TODO: update table value
+        if (!upprsv.getRemoteService().getRemoteDevice().getUDN().equals(currentView.getUdn())) return;
+
+        DefaultTableModel vtm = (DefaultTableModel)varTable.getModel();
+        for (int i = 0; i < vtm.getRowCount(); i++) {
+            String varName = (String)vtm.getValueAt(i, 1);
+            if (upprsv.getName().equals(varName)) {
+                vtm.setValueAt(upprsv.getValue(), i, 2);
+                return;
+            }
+        }
     }
 
     /**
@@ -416,7 +439,58 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
      * デバイスの詳細テーブル（コマンド，センサ）を更新する
      * @param evt
      */
-    private void updateTable(TreeSelectionEvent evt) {
-        Device d = (Device)((ToolTipTreeNode)roomTree.getSelectionPath().getLastPathComponent()).getUserObject();
+    private void updateTable(Device device) {
+        currentView = device;
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        Device d = (Device)s.load(Device.class, device.getId());
+
+        DefaultTableModel ctm = (DefaultTableModel)comTable.getModel();
+        DefaultTableModel vtm = (DefaultTableModel)varTable.getModel();
+
+        removeAllRow(ctm);
+        removeAllRow(vtm);
+        for (java.util.Iterator<UPnPRemoteStateVariable> i = curSubscribe.iterator(); i.hasNext();) {
+            i.next().unsubscribe();
+            i.remove();
+        }
+        for (Command c : (Set<Command>)d.getCommands()) {
+            ctm.addRow(new Object[]{
+                c.getId(),
+                c.getName(),
+                CommandType.valueOf(c.getType()).toString(),
+                c.getPower(),
+                c.getAliasName(),
+                c.getCommand()
+            });
+        }
+        for (Sensor sens : (Set<Sensor>)d.getSensors()) {
+            try {
+                UPnPRemoteStateVariable upprsv = EntityMapUtil.dbToUPnP(sens);
+                if (!upprsv.subscribe()) {
+                    LOG.log(Level.WARNING, "Failed to subscribe UPnPRemoteStateVariable '{0}'", upprsv.getName());
+                    continue;
+                }
+                curSubscribe.add(upprsv);
+                vtm.addRow(new Object[]{
+                    sens.getId(),
+                    sens.getSensorType().getName(),
+                    0.0
+                });
+            } catch (UPnPException ex) {
+                LOG.log(Level.WARNING, "Sensor add failed", ex);
+            }
+        }
+
+        s.close();
+    }
+
+    /**
+     * 全ての行を削除する
+     * @param dtm
+     */
+    private void removeAllRow(DefaultTableModel dtm) {
+        for (int i = dtm.getRowCount() - 1; i >= 0 ; i--) {
+            dtm.removeRow(i);
+        }
     }
 }

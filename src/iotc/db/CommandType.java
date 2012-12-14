@@ -18,6 +18,14 @@ public enum CommandType {
     public int getId() {
         return this.id;
     }
+
+    public static CommandType valueOf(int id) {
+        for (CommandType d : values()) {
+            if (d.id == id) return d;
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return this.exp;
