@@ -11,8 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -40,16 +38,17 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
      * Creates new form MainOverviewWindow
      */
     public MainOverviewWindow() {
+        // <editor-fold defaultstate="collapsed" desc="Look and Feel settings">
         try {
-            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+                }
             }
-        }
         } catch (Exception e) {
             // If Nimbus is not available, you can set the GUI to another look and feel.
-        }
+        }// </editor-fold>
 
         curSubscribe = new ArrayList();
         initComponents();
@@ -303,9 +302,9 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     }//GEN-LAST:event_aComMenuItemActionPerformed
 
     private void roomTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_roomTreeValueChanged
-        if (!(evt.getPath().getLastPathComponent() instanceof ToolTipTreeNode)) return;
-        Device d = (Device)((ToolTipTreeNode)evt.getPath().getLastPathComponent()).getUserObject();
-        updateTable(d);
+        Object o = ((DefaultMutableTreeNode)evt.getPath().getLastPathComponent()).getUserObject();
+        if (!(o instanceof Device)) return;
+        updateTable((Device)o);
     }//GEN-LAST:event_roomTreeValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
