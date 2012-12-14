@@ -259,7 +259,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="updateSensorTypeCombo();&#xd;&#xa;varTable.getColumnModel().getColumn(0).setMinWidth(1);&#xd;&#xa;varTable.getColumnModel().getColumn(0).setMaxWidth(15);&#xd;&#xa;varTable.getColumnModel().getColumn(0).setPreferredWidth(15);"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="JComboBox combo = new JComboBox();&#xd;&#xa;combo.addActionListener(new ActionListener(){&#xd;&#xa;    @Override&#xd;&#xa;    public void actionPerformed(ActionEvent e) {&#xd;&#xa;        comboBoxValueChanged(e);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;combo.setBorder(BorderFactory.createEmptyBorder());&#xd;&#xa;varTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(combo));&#xd;&#xa;updateSensorTypeCombo();&#xd;&#xa;varTable.getColumnModel().getColumn(0).setMinWidth(1);&#xd;&#xa;varTable.getColumnModel().getColumn(0).setMaxWidth(15);&#xd;&#xa;varTable.getColumnModel().getColumn(0).setPreferredWidth(15);"/>
           </AuxValues>
         </Component>
       </SubComponents>

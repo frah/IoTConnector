@@ -129,6 +129,15 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         jLabel6.setText("Commands");
 
         varTable.setModel(new UPnPVariableTableModel());
+        JComboBox combo = new JComboBox();
+        combo.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                comboBoxValueChanged(e);
+            }
+        });
+        combo.setBorder(BorderFactory.createEmptyBorder());
+        varTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(combo));
         updateSensorTypeCombo();
         varTable.getColumnModel().getColumn(0).setMinWidth(1);
         varTable.getColumnModel().getColumn(0).setMaxWidth(15);
@@ -289,35 +298,28 @@ public class NewDeviceDialog extends javax.swing.JDialog {
 
     // <editor-fold defaultstate="collapsed" desc="Table functions">
     /**
-     * センサタイプ一覧のコンボボックスを生成して返す
-     * @return
-     */
-    private JComboBox getSensorTypeCombo() {
-        JComboBox ret = new JComboBox();
-        Session s = HibernateUtil.getSessionFactory().openSession();
-        Query q = s.getNamedQuery("SensorType.findAll");
-        for (SensorType st : (List<SensorType>)q.list()) {
-            ret.addItem(st);
-        }
-        s.close();
-        ret.addItem("Add new type...");
-        ret.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                comboBoxValueChanged(e);
-            }
-        });
-        ret.setBorder(BorderFactory.createEmptyBorder());
-        ret.setSelectedIndex(0);
-        return ret;
-    }
-
-    /**
      * センサタイプのコンボボックスを更新する
      */
     private void updateSensorTypeCombo() {
         TableColumn tc = varTable.getColumnModel().getColumn(2);
-        tc.setCellEditor(new DefaultCellEditor(getSensorTypeCombo()));
+        JComboBox combo = (JComboBox)((DefaultCellEditor)tc.getCellEditor()).getComponent();
+        combo.removeAllItems();
+        ActionListener[] als = combo.getActionListeners();
+        for (ActionListener al : als) {
+            combo.removeActionListener(al);
+        }
+
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        Query q = s.getNamedQuery("SensorType.findAll");
+        for (SensorType st : (List<SensorType>)q.list()) {
+            combo.addItem(st);
+        }
+        s.close();
+        combo.addItem("Add new type...");
+
+        for (ActionListener al : als) {
+            combo.addActionListener(al);
+        }
     }
 
     private void comboBoxValueChanged(ActionEvent evt) {
@@ -326,6 +328,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
             NewSensorTypeDialog nstd = new NewSensorTypeDialog((javax.swing.JFrame)this.getParent(), true);
             nstd.setVisible(true);
             updateSensorTypeCombo();
+            if (c.getItemCount() > 1) c.setSelectedIndex(0);
         }
     }
 
