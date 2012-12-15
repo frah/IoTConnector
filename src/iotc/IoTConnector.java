@@ -1,11 +1,12 @@
 package iotc;
 
 import iotc.gui.MainOverviewWindow;
-import iotc.test.*;
+import iotc.test.DummySunSPOTDevice;
+import iotc.test.DummyUPnPDevice;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.ArrayList;
 
 /**
  * IoTConnectorメインクラス
