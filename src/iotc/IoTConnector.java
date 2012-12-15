@@ -5,6 +5,7 @@ import iotc.test.DummyUPnPDevice;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.ArrayList;
 
 /**
  * IoTConnectorメインクラス
@@ -14,7 +15,7 @@ public class IoTConnector {
     private boolean debug;
     private UPnPDevices upnp;
     private MainOverviewWindow ovw;
-    private DummyUPnPDevice d;
+    private ArrayList<DummyUPnPDevice> dummy;
     private static final String DEFAULT_LOGGING_PROPERTIES;
     private static final String DEBUG_LOGGING_PROPERTIES;
     private static final Logger LOG;
@@ -54,8 +55,11 @@ public class IoTConnector {
         upnp.addListener(ovw);
 
         if (debug) {
-            d = new DummyUPnPDevice("Dummy-c0d2c761-777a-43bb-be25-7e9ccd714044");
-            d.start();
+            dummy = new ArrayList();
+            dummy.add(new DummyUPnPDevice("Dummy-c0d2c761-777a-43bb-be25-7e9ccd714044"));
+            for (DummyUPnPDevice d : dummy) {
+                d.start();
+            }
         }
 
         // VM終了時の処理
@@ -64,7 +68,9 @@ public class IoTConnector {
             public void run() {
                 LOG.info("IoTConnector will shutdown.");
                 if (IoTConnector.this.debug) {
-                    d.stop();
+                    for (DummyUPnPDevice d : dummy) {
+                        d.stop();
+                    }
                 }
                 upnp.stop();
             }

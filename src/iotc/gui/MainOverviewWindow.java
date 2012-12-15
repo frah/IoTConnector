@@ -210,6 +210,11 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         jMenu3.add(addRoomMenuItem);
 
         addIRComMenuItem.setText("Add IR command");
+        addIRComMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addIRComMenuItemActionPerformed(evt);
+            }
+        });
         jMenu3.add(addIRComMenuItem);
 
         menuBar.add(jMenu3);
@@ -333,6 +338,10 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         new AboutDialog(this, true).setVisible(true);
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
+    private void addIRComMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIRComMenuItemActionPerformed
+        new NewIRCommandDialog(this, true, null).setVisible(true);
+    }//GEN-LAST:event_addIRComMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aComMenuItem;
     private javax.swing.JMenuItem aboutMenuItem;
@@ -424,7 +433,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
     @Override
     public void onUpdateValue(UPnPRemoteStateVariable upprsv) {
-        if (!upprsv.getRemoteService().getRemoteDevice().getUDN().equals(currentView.getUdn())) return;
+        if (currentView == null || !upprsv.getRemoteService().getRemoteDevice().getUDN().equals(currentView.getUdn())) return;
 
         DefaultTableModel vtm = (DefaultTableModel)varTable.getModel();
         for (int i = 0; i < vtm.getRowCount(); i++) {
@@ -440,26 +449,28 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
      * 部屋のツリーを更新
      */
     private void updateTree() {
-        DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
-        root.removeAllChildren();
+        synchronized (roomTree) {
+            DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+            root.removeAllChildren();
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
-        Query q = s.getNamedQuery("Room.findAll");
-        for (Room r : (java.util.List<Room>)q.list()) {
-            DefaultMutableTreeNode node = new ToolTipTreeNode(r);
-            for (Device d : (java.util.Set<Device>)r.getDevices()) {
-                node.add(new ToolTipTreeNode(d, d.getUdn()));
+            Session s = HibernateUtil.getSessionFactory().openSession();
+            Query q = s.getNamedQuery("Room.findAll");
+            for (Room r : (java.util.List<Room>)q.list()) {
+                DefaultMutableTreeNode node = new ToolTipTreeNode(r);
+                for (Device d : (java.util.Set<Device>)r.getDevices()) {
+                    node.add(new ToolTipTreeNode(d, d.getUdn()));
+                }
+
+                root.add(node);
             }
+            s.close();
 
-            root.add(node);
-        }
-        s.close();
+            model.reload();
 
-        model.reload();
-
-        for (int row = 0; row < roomTree.getRowCount(); row++) {
-            roomTree.expandRow(row);
+            for (int row = 0; row < roomTree.getRowCount(); row++) {
+                roomTree.expandRow(row);
+            }
         }
     }
 

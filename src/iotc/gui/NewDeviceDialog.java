@@ -79,9 +79,13 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         jLabel4.setText("Type");
 
         udnField.setEditable(false);
-        udnField.setText(upprd.getUDN());
+        if (upprd != null) {
+            udnField.setText(upprd.getUDN());
+        }
 
-        nameField.setText(upprd.getFriendlyName());
+        if (upprd != null) {
+            nameField.setText(upprd.getFriendlyName());
+        }
 
         addRoomButton.setText("Add");
         addRoomButton.addActionListener(new java.awt.event.ActionListener() {
@@ -242,6 +246,11 @@ public class NewDeviceDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         boolean isSuccess = false;
 
+        if (nameField.getText().equals("")) {
+            JOptionPane.showMessageDialog(this, "Device name is required", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         Device device = new Device();
         device.setUdn(udnField.getText());
         device.setName(nameField.getText());
@@ -253,12 +262,20 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
 
         Session s = HibernateUtil.getSessionFactory().openSession();
+
+        if (device.getType() != DeviceType.NonUPnP.getId()) {
+            Query q = s.getNamedQuery("Device.findFromUDN");
+            if (q.uniqueResult() != null) {
+                JOptionPane.showMessageDialog(this, "This device is already added", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
         Transaction t = s.beginTransaction();
         try {
             Serializable id = s.save(device);
             Device d = (Device)s.load(Device.class, id);
 
-            for (int i = 0; i < actionModel.getRowCount(); i++) {
+            for (int i = 0; i < actionModel.getRowCount() - 1; i++) {
                 Command c = actionModel.getRowAt(i);
                 if (c != null) {
                     c.setDevice(d);
@@ -288,6 +305,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void comTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comTableMouseReleased
+        if (upprd == null) return;
         if (comTable.rowAtPoint(evt.getPoint()) != comTable.getRowCount() -1) return;
         if (evt.getClickCount() != 2) return;
 
@@ -369,6 +387,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
      * テーブルの内容を更新する
      */
     private void updateTable() {
+        if (upprd == null) return;
         UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
 
         for (UPnPRemoteService upprs : this.upprd.getRemoteServiceList()) {

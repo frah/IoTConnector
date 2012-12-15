@@ -137,12 +137,12 @@
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="udnField.setText(upprd.getUDN());"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="if (upprd != null) {&#xd;&#xa;    udnField.setText(upprd.getUDN());&#xd;&#xa;}"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="nameField">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="nameField.setText(upprd.getFriendlyName());"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="if (upprd != null) {&#xd;&#xa;    nameField.setText(upprd.getFriendlyName());&#xd;&#xa;}"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="roomCombo">
