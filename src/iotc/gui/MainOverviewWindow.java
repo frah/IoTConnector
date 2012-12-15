@@ -76,8 +76,10 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         varTable = new javax.swing.JTable();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        addRoomMenuItem = new javax.swing.JMenuItem();
         quitMenuItem = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        addRoomMenuItem = new javax.swing.JMenuItem();
+        addIRComMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
 
@@ -187,14 +189,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
         jMenu1.setText("File");
 
-        addRoomMenuItem.setText("Add room");
-        addRoomMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addRoomMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(addRoomMenuItem);
-
         quitMenuItem.setText("Exit");
         quitMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,6 +198,21 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         jMenu1.add(quitMenuItem);
 
         menuBar.add(jMenu1);
+
+        jMenu3.setText("Edit");
+
+        addRoomMenuItem.setText("Add room");
+        addRoomMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addRoomMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(addRoomMenuItem);
+
+        addIRComMenuItem.setText("Add IR command");
+        jMenu3.add(addIRComMenuItem);
+
+        menuBar.add(jMenu3);
 
         jMenu2.setText("Help");
 
@@ -327,12 +336,14 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aComMenuItem;
     private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem addIRComMenuItem;
     private javax.swing.JMenuItem addRoomMenuItem;
     private javax.swing.JTable comTable;
     private javax.swing.JMenuItem dDelMenuItem;
     private javax.swing.JPopupMenu devicePopup;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
