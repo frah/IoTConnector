@@ -114,7 +114,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="actionComboActionPerformed"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this.updateActionCombo();&#xd;&#xa;this.actionComboActionPerformed(null);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this.updateActionCombo();"/>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="actionCombo.setRenderer(new javax.swing.plaf.basic.BasicComboBoxRenderer(){&#xa;    @Override&#xa;    public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {&#xa;        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);&#xa;        if (value instanceof UPnPRemoteAction) {&#xa;            setText(((UPnPRemoteAction)value).getName());&#xa;        }&#xa;        return this;&#xa;    }&#xa;});"/>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;UPnPRemoteAction&gt;"/>
       </AuxValues>
@@ -169,6 +169,9 @@
               <TableHeader reorderingAllowed="false" resizingAllowed="true"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="this.actionComboActionPerformed(null);"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

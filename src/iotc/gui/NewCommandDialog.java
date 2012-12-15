@@ -70,7 +70,6 @@ public class NewCommandDialog extends javax.swing.JDialog {
             }
         });
         this.updateActionCombo();
-        this.actionComboActionPerformed(null);
         actionCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 actionComboActionPerformed(evt);
@@ -107,6 +106,7 @@ public class NewCommandDialog extends javax.swing.JDialog {
         argTable.getColumnModel().getColumn(1).setResizable(false);
         argTable.getColumnModel().getColumn(3).setResizable(false);
         argTable.getColumnModel().getColumn(3).setPreferredWidth(15);
+        this.actionComboActionPerformed(null);
 
         jLabel3.setText("Name");
 
@@ -210,7 +210,7 @@ public class NewCommandDialog extends javax.swing.JDialog {
 
     private void actionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionComboActionPerformed
         DefaultTableModel tm = (DefaultTableModel)argTable.getModel();
-        for (int i = 0; i < tm.getRowCount(); i++) {
+        for (int i = tm.getRowCount() - 1; i >= 0 ; i--) {
             tm.removeRow(i);
         }
 
