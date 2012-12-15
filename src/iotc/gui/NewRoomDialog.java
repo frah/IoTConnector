@@ -40,6 +40,7 @@ public class NewRoomDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("New Room - IoTConnector");
+        setResizable(false);
 
         jLabel1.setText("Name");
 
