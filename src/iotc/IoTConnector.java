@@ -1,7 +1,7 @@
 package iotc;
 
 import iotc.gui.MainOverviewWindow;
-import iotc.test.DummyUPnPDevice;
+import iotc.test.*;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -16,6 +16,7 @@ public class IoTConnector {
     private UPnPDevices upnp;
     private MainOverviewWindow ovw;
     private ArrayList<DummyUPnPDevice> dummy;
+    private DummySunSPOTDevice dsun;
     private static final String DEFAULT_LOGGING_PROPERTIES;
     private static final String DEBUG_LOGGING_PROPERTIES;
     private static final Logger LOG;
@@ -57,6 +58,7 @@ public class IoTConnector {
         if (debug) {
             dummy = new ArrayList();
             dummy.add(new DummyUPnPDevice("Dummy-c0d2c761-777a-43bb-be25-7e9ccd714044"));
+            dsun = new DummySunSPOTDevice("SunSPOT-dummy");
             for (DummyUPnPDevice d : dummy) {
                 d.start();
             }
@@ -71,6 +73,7 @@ public class IoTConnector {
                     for (DummyUPnPDevice d : dummy) {
                         d.stop();
                     }
+                    dsun.stop();
                 }
                 upnp.stop();
             }
