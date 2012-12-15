@@ -3,6 +3,7 @@ package iotc.gui;
 import iotc.db.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -14,7 +15,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.itolab.morihit.clinkx.UPnPRemoteAction;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteService;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
@@ -115,20 +115,23 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         });
 
         comTable.setModel(new UPnPActionTableModel());
-        comTable.getColumnModel().getColumn(0).setMinWidth(1);
-        comTable.getColumnModel().getColumn(0).setMaxWidth(15);
-        comTable.getColumnModel().getColumn(0).setPreferredWidth(15);
-        JComboBox cb = new JComboBox(new Integer[] {0, 1, 2, 3, 4, 5});
-        cb.setBorder(BorderFactory.createEmptyBorder());
-        comTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(cb));
-        JComboBox cbb = new JComboBox(CommandType.values());
-        cbb.setBorder(BorderFactory.createEmptyBorder());
-        comTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(cbb));
+        comTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        comTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                comTableMouseReleased(evt);
+            }
+        });
+        comTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                comTableKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(comTable);
 
         jLabel6.setText("Commands");
 
         varTable.setModel(new UPnPVariableTableModel());
+        varTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         JComboBox combo = new JComboBox();
         combo.addActionListener(new ActionListener(){
             @Override
@@ -284,6 +287,32 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void comTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comTableMouseReleased
+        if (comTable.rowAtPoint(evt.getPoint()) != comTable.getRowCount() -1) return;
+        if (evt.getClickCount() != 2) return;
+
+        NewCommandDialog ncd = new NewCommandDialog((javax.swing.JFrame)this.getParent(), true, this.upprd);
+        ncd.setVisible(true);
+        if (ncd.isCancelled()) return;
+
+        Command c = ncd.getNewCommand();
+        if (c == null) return;
+        UPnPActionTableModel actionModel = (UPnPActionTableModel)comTable.getModel();
+        actionModel.addCommand(c);
+    }//GEN-LAST:event_comTableMouseReleased
+
+    private void comTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comTableKeyReleased
+        if (evt.getKeyCode() != KeyEvent.VK_DELETE) return;
+
+        int r = comTable.getSelectedRow();
+        if (r < 0 || r == comTable.getRowCount() - 1) return;
+        UPnPActionTableModel actionModel = (UPnPActionTableModel)comTable.getModel();
+        actionModel.removeCommand(r);
+    }//GEN-LAST:event_comTableKeyReleased
+
+    /**
+     * 部屋一覧を更新する
+     */
     private void updateRoomList() {
         Session s = HibernateUtil.getSessionFactory().openSession();
         Query q = s.getNamedQuery("Room.findAll");
@@ -322,6 +351,10 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         }
     }
 
+    /**
+     * センサタイプのコンボボックスの値が変更された時のイベントリスナ
+     * @param evt
+     */
     private void comboBoxValueChanged(ActionEvent evt) {
         JComboBox c = (JComboBox)evt.getSource();
         if (c.getSelectedIndex() == c.getItemCount()-1) {
@@ -337,14 +370,10 @@ public class NewDeviceDialog extends javax.swing.JDialog {
      */
     private void updateTable() {
         UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
-        UPnPActionTableModel actionModel = (UPnPActionTableModel)comTable.getModel();
 
         for (UPnPRemoteService upprs : this.upprd.getRemoteServiceList()) {
             for (UPnPRemoteStateVariable var : upprs.getRemoteStateVariableList()) {
                 varModel.addStateVariable(var);
-            }
-            for (UPnPRemoteAction act : upprs.getRemoteActionList()) {
-                actionModel.addUPnPAction(act);
             }
         }
     }// </editor-fold>

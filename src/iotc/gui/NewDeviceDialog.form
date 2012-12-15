@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
+<Form version="1.6" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" value="New Device - IoTConnector"/>
@@ -224,13 +224,17 @@
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
               <TableColumnModel selectionModel="0"/>
             </Property>
+            <Property name="selectionModel" type="javax.swing.ListSelectionModel" editor="org.netbeans.modules.form.editors2.JTableSelectionModelEditor">
+              <JTableSelectionModel selectionMode="0"/>
+            </Property>
             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
             </Property>
           </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="comTable.getColumnModel().getColumn(0).setMinWidth(1);&#xd;&#xa;comTable.getColumnModel().getColumn(0).setMaxWidth(15);&#xd;&#xa;comTable.getColumnModel().getColumn(0).setPreferredWidth(15);&#xd;&#xa;JComboBox cb = new JComboBox(new Integer[] {0, 1, 2, 3, 4, 5});&#xd;&#xa;cb.setBorder(BorderFactory.createEmptyBorder());&#xd;&#xa;comTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(cb));&#xd;&#xa;JComboBox cbb = new JComboBox(CommandType.values());&#xd;&#xa;cbb.setBorder(BorderFactory.createEmptyBorder());&#xd;&#xa;comTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(cbb));"/>
-          </AuxValues>
+          <Events>
+            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="comTableMouseReleased"/>
+            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="comTableKeyReleased"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
@@ -253,6 +257,9 @@
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
               <TableColumnModel selectionModel="0"/>
+            </Property>
+            <Property name="selectionModel" type="javax.swing.ListSelectionModel" editor="org.netbeans.modules.form.editors2.JTableSelectionModelEditor">
+              <JTableSelectionModel selectionMode="0"/>
             </Property>
             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>

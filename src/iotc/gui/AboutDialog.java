@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package iotc.gui;
 
 /**
- *
- * @author freiheit
+ * ソフトウェア情報ダイアログ
+ * @author atsushi-o
  */
 public class AboutDialog extends javax.swing.JDialog {
 

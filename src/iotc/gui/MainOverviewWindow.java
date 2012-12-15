@@ -281,7 +281,10 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     private void aComMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aComMenuItemActionPerformed
         if (lastRightClicked == null) return;
         UPnPRemoteDevice d = iotc.UPnPDevices.getInstance().getAvailableUPnPDevice(lastRightClicked.getUdn());
-        if (d == null) return;
+        if (d == null) {
+            JOptionPane.showMessageDialog(this, "This UPnP device is not available", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         NewCommandDialog ncd = new NewCommandDialog(this, true, d);
 
