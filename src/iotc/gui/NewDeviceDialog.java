@@ -265,6 +265,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
 
         if (device.getType() != DeviceType.NonUPnP.getId()) {
             Query q = s.getNamedQuery("Device.findFromUDN");
+            q.setString("udn", device.getUdn());
             if (q.uniqueResult() != null) {
                 JOptionPane.showMessageDialog(this, "This device is already added", "Error", JOptionPane.ERROR_MESSAGE);
                 return;

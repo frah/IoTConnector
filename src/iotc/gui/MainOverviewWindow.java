@@ -512,7 +512,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
                 curSubscribe.add(upprsv);
                 vtm.addRow(new Object[]{
                     sens.getId(),
-                    sens.getSensorType().getName(),
+                    sens.getName(),
                     0.0
                 });
             } catch (UPnPException ex) {
