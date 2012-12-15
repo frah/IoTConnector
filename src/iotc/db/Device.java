@@ -61,7 +61,7 @@ public class Device  implements java.io.Serializable {
         if (upprd.getFriendlyName().startsWith("SunSPOT")) {
             this.type = DeviceType.SunSPOT.getId();
         } else {
-            this.type = DeviceType.Other.getId();
+            this.type = DeviceType.OtherUPnP.getId();
         }
     }
 
