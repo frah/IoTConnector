@@ -57,6 +57,7 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
     }
 
     public synchronized void stop() {
+        device.stop();
         this.isStop = true;
     }
 
@@ -84,8 +85,6 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {}
         }
-
-        device.stop();
     }
 
     public float getTemperature() {
