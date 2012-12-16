@@ -1,12 +1,16 @@
 package iotc.db;
 
 /**
- *
+ * デバイスタイプを表す列挙型
  * @author atsushi-o
  */
 public enum DeviceType {
-    SunSPOT (1, "SunSPOT"),
-    Other   (2, "Other UPnP device");
+    /** SunSPOTデバイス */
+    SunSPOT     (1, "SunSPOT"),
+    /** SunSPOT以外のUPnPデバイス */
+    OtherUPnP   (2, "Other UPnP device"),
+    /** UPnP非対応のデバイス */
+    NonUPnP     (3, "Non UPnP device");
 
     private final int type_id;
     private final String type_name;
