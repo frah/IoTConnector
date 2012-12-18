@@ -1,96 +1,74 @@
 package iotc.parser;
 
 import org.codehaus.jparsec.*;
-import org.codehaus.jparsec.functors.Binary;
-import org.codehaus.jparsec.functors.Map;
-import org.codehaus.jparsec.functors.Unary;
+import org.codehaus.jparsec.functors.*;
+import org.codehaus.jparsec.pattern.*;
+import static org.codehaus.jparsec.Parsers.sequence;
+import static org.codehaus.jparsec.Parsers.tuple;
+import static org.codehaus.jparsec.Scanners.string;
 
 /**
- * 統計関数文字列パーサ
+ *
  * @author atsushi-o
  */
-public final class StatisticalMethodParser {
-    enum BinaryOperator implements Binary<Double> {
-        PLUS {
-            @Override public Double map(Double a, Double b) {
-                return a + b;
+public class StatisticalMethodParser {
+    enum FunctionMapper implements Map<String, Double> {
+        SUM {
+            @Override public Double map(String s) {
+                return 0.0;
             }
-        },
-        MINUS {
-            @Override public Double map(Double a, Double b) {
-                return a - b;
+        };
+        public static String[] getFunctions() {
+            FunctionMapper[] fo = values();
+            String[] ret = new String[fo.length];
+            for (int i = 0; i < fo.length; i++) {
+                ret[i] = fo[i].name();
             }
-        },
-        MUL {
-            @Override public Double map(Double a, Double b) {
-                return a * b;
-            }
-        },
-        DIV {
-            @Override public Double map(Double a, Double b) {
-                return a / b;
-            }
+            return ret;
         }
     }
-    enum UnaryOperator implements Unary<Double> {
-        NEG {
-            @Override public Double map(Double n) {
-                return -n;
-            }
-        }
-    }
-    static final Parser<Double> NUMBER = Terminals.DecimalLiteral.PARSER.map(new Map<String, Double>() {
-        @Override public Double map(String s) {
-            return Double.valueOf(s);
-        }
-    });
 
-    private static final Terminals OPERATORS = Terminals.operators("+", "-", "*", "/", "(", ")");
+    // LETTER :: [^()]+
+    public static final Parser<String> LETTER =
+            Scanners.pattern(Patterns.regex("[^()]"), "any char except parenthesis").many1().source();
+    // BIG_LETTER :: <big letter>+
+    private static final Parser<String> BIG_LETTER =
+            Scanners.pattern(Patterns.regex("[A-Z]+"), "big letters").source();
+    // FUNCTION ::= <BIG_LETTER> "(" .+ ")"
+    private static final Parser<String> FUNCTION =
+            tuple(BIG_LETTER, string("("), LETTER, string(")"))
+            .map(new Map<Tuple4<String, Void, String, Void>, String>(){
+                @Override
+                public String map(Tuple4<String, Void, String, Void> from) {
+                    System.out.println("Func: "+from.a);
+                    System.out.println("Arg: "+from.c);
+                    return "test";
+                }
+            });
+    private static final Parser<String> NUMERIC_FUNC =
+            Scanners.pattern(Patterns.regex("[0-9+-/() ]"), "numeric func").many1().source();
+    private static final Parser<String> METHOD =
+            Parsers.or(NUMERIC_FUNC, FUNCTION).many().source();
+    /*
+    static final Parser<String> FUNCTION = Scanners.many(P_FUNCTION, "function expected").source();
 
-    static final Parser<Void> IGNORED =
-            Parsers.or(Scanners.JAVA_LINE_COMMENT, Scanners.JAVA_BLOCK_COMMENT, Scanners.WHITESPACES).skipMany();
-    static final Parser<?> TOKENIZER =
-            Parsers.or(Terminals.DecimalLiteral.TOKENIZER, OPERATORS.tokenizer());
+    static Parser<String> funcSolver(Parser<String> atom) {
 
-    static Parser<?> term(String... names) {
-        return OPERATORS.token(names);
-    }
+    }*/
 
-    static final Parser<BinaryOperator> WHITESPACE_MUL =
-            term("+", "-", "*", "/").not().retn(BinaryOperator.MUL);
-
-    static <T> Parser<T> op(String name, T value) {
-        return term(name).retn(value);
-    }
-
-    static Parser<Double> calc(Parser<Double> atom) {
-        Parser.Reference<Double> ref = Parser.newReference();
-        Parser<Double> unit = ref.lazy().between(term("("), term(")")).or(atom);
-        Parser<Double> parser = new OperatorTable<Double>()
-                .infixl(op("+", BinaryOperator.PLUS), 10)
-                .infixl(op("-", BinaryOperator.MINUS), 10)
-                .infixl(op("*", BinaryOperator.MUL).or(WHITESPACE_MUL), 20)
-                .infixl(op("/", BinaryOperator.DIV), 20)
-                .prefix(op("-", UnaryOperator.NEG), 30)
-                .build(unit);
-        ref.set(parser);
-        return parser;
-    }
-
-    private static final Parser<Double> PARSER = calc(NUMBER).from(TOKENIZER, IGNORED);
+    private static final Parser<String> PARSER = METHOD;
     /**
-     * 統計関数文字列をパースし，結果値を返す
+     * 統計関数文字列をパースして計算結果を返す
      * @param source 統計関数文字列
      * @return 計算結果
      */
     public static Double parse(CharSequence source) {
-        return PARSER.parse(source);
+        return NumericCalcParser.parse(PARSER.parse(source));
     }
     /* インスタンス化抑制 */
     private StatisticalMethodParser() {}
 
     public static void main(String[] args) {
-        String a = "(12+3)*4";
-        System.out.println(a+" = "+StatisticalMethodParser.parse(a));
+        System.out.println(PARSER.parse("SUM(Living::SunSPOT::Illum) + 20"));
     }
 }

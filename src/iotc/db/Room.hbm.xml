@@ -26,4 +26,9 @@
         from iotc.db.Room
         ]]>
     </query>
+    <query name="Room.findFromName">
+        <![CDATA[
+        from iotc.db.Room as room where room.name = :name
+        ]]>
+    </query>
 </hibernate-mapping>
