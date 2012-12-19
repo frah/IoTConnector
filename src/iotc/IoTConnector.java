@@ -1,6 +1,8 @@
 package iotc;
 
 import iotc.gui.MainOverviewWindow;
+import iotc.medium.Medium;
+import iotc.medium.Twitter;
 import iotc.test.DummySunSPOTDevice;
 import iotc.test.DummyUPnPDevice;
 import java.util.ArrayList;
@@ -15,9 +17,14 @@ import java.util.logging.Logger;
 public class IoTConnector {
     private boolean debug;
     private UPnPDevices upnp;
+    private CommandOperator operator;
+    private ArrayList<Medium> mediums;
+
     private MainOverviewWindow ovw;
+
     private ArrayList<DummyUPnPDevice> dummy;
     private DummySunSPOTDevice dsun;
+
     private static final String DEFAULT_LOGGING_PROPERTIES;
     private static final String DEBUG_LOGGING_PROPERTIES;
     private static final Logger LOG;
@@ -55,6 +62,13 @@ public class IoTConnector {
         ovw = new MainOverviewWindow();
         ovw.setVisible(true);
         upnp.addListener(ovw);
+
+        operator = new CommandOperator();
+        mediums = new ArrayList();
+        mediums.add(new Twitter());
+        for (Medium m : mediums) {
+            m.addListener(operator);
+        }
 
         if (debug) {
             dummy = new ArrayList();

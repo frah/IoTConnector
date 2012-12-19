@@ -10,7 +10,7 @@ import java.util.Arrays;
  * 通信媒体の抽象クラス
  * @author atsushi-o
  */
-public abstract class AbstractMedium {
+public abstract class AbstractMedium implements Medium {
     private ArrayList<CommandEventListener> listeners = new ArrayList();
 
     /**
@@ -20,7 +20,17 @@ public abstract class AbstractMedium {
      * @param message メッセージ本文
      * @return 送信成否
      */
+    @Override
     public abstract boolean Send(Log log, User user, String message);
+
+    /**
+     * メッセージ受信イベントのリスナを登録
+     * @param listener
+     */
+    @Override
+    public void addListener(CommandEventListener listener) {
+        listeners.add(listener);
+    }
 
     /**
      * メッセージ受信イベントのリスナを登録
@@ -33,6 +43,7 @@ public abstract class AbstractMedium {
      * メッセージ受信イベントのリスナの登録解除
      * @param listener
      */
+    @Override
     public void removeListener(CommandEventListener listener) {
         listeners.remove(listener);
     }
@@ -42,7 +53,7 @@ public abstract class AbstractMedium {
      */
     protected void fireReceiveEvent(User user, String command, Log reply) {
         for (CommandEventListener l : listeners) {
-            l.onReceiveCommand(user, command, reply);
+            l.onReceiveCommand(this, user, command, reply);
         }
     }
 }

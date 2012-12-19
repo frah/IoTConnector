@@ -35,7 +35,7 @@
     </class>
     <query name="User.findFromAlias">
         <![CDATA[
-        from iotc.db.User as user where user.aliasName like %:alias%
+        from iotc.db.User as user where user.aliasName like :alias
         ]]>
     </query>
 </hibernate-mapping>

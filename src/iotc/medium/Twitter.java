@@ -1,10 +1,6 @@
 package iotc.medium;
 
-import iotc.db.HibernateUtil;
-import iotc.db.Log;
-import iotc.db.LogState;
-import iotc.db.Power;
-import iotc.db.PowerType;
+import iotc.db.*;
 import iotc.db.User;
 import java.io.Serializable;
 import java.util.Collections;
@@ -12,14 +8,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.collections15.map.LRUMap;
-import org.hibernate.*;
-import twitter4j.Status;
-import twitter4j.StatusUpdate;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.TwitterStream;
-import twitter4j.TwitterStreamFactory;
-import twitter4j.UserStreamListener;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import twitter4j.*;
 
 /**
  * Twitterメディア
@@ -42,11 +35,13 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         ts = new TwitterStreamFactory().getInstance();
         ts.addListener(this);
         ts.user(new String[]{ACCOUNT});
-        relations = (LRUMap<Long,Log>)Collections.synchronizedMap(new LRUMap(50));
+        relations = new LRUMap(50);
+        LOG.info("Twitter stream listening start.");
     }
 
     public void stop() {
         ts.cleanUp();
+        LOG.info("Twitter stream listening stop.");
     }
 
     /* Implementation of AbstractMedium */
@@ -94,7 +89,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         User u = null;
         Session s = HibernateUtil.getSessionFactory().openSession();
         Query q = s.getNamedQuery("User.findFromAlias");
-        q.setString("alias", status.getUser().getScreenName());
+        q.setString("alias", "%"+status.getUser().getScreenName()+"%");
         List<User> candidate = (List<User>)q.list();
         if (candidate != null && candidate.size() > 0) {
             for (User cu : candidate) {
@@ -113,15 +108,16 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             p.setPower(0);
             p.setType(PowerType.BASIC.getId());
 
+            Transaction t = s.beginTransaction();
             try {
-                s.beginTransaction();
                 Serializable id = s.save(u);
                 u = (User)s.load(User.class, id);
-                p.setUserByUserId(u);
+
+                p.setUserId(u.getId());
                 s.save(p);
-                s.getTransaction().commit();
+                t.commit();
             } catch (HibernateException ex) {
-                s.getTransaction().rollback();
+                t.rollback();
                 LOG.log(Level.SEVERE, "Saving new user is failed", ex);
                 s.close();
                 return;
@@ -157,10 +153,11 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             s.save(l);
             s.getTransaction().commit();
 
-            // synchronized
-            relations.put(status.getId(), l);
-            LOG.log(Level.INFO, "Receive new message: {0} from {1} reference to {2}", new Object[]{mes, u.getName(), l});
-            super.fireReceiveEvent(u, mes, l);
+            synchronized (this) {
+                relations.put(status.getId(), l);
+                LOG.log(Level.INFO, "Receive new message: {0} from {1} reference to {2}", new Object[]{mes, u.getName(), l});
+                super.fireReceiveEvent(u, mes, l);
+            }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Any error occured. Event not fired.", ex);
             s.getTransaction().rollback();
@@ -184,40 +181,22 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public void onDeletionNotice(long l, long l1) {}
-    @Override
-    public void onFriendList(long[] longs) {}
-    @Override
-    public void onFavorite(twitter4j.User user, twitter4j.User user1, Status status) {}
-    @Override
-    public void onUnfavorite(twitter4j.User user, twitter4j.User user1, Status status) {}
-    @Override
-    public void onUserListMemberAddition(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
-    @Override
-    public void onUserListMemberDeletion(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
-    @Override
-    public void onUserListSubscription(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
-    @Override
-    public void onUserListUnsubscription(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
-    @Override
-    public void onUserListCreation(twitter4j.User user, twitter4j.UserList ul) {}
-    @Override
-    public void onUserListUpdate(twitter4j.User user, twitter4j.UserList ul) {}
-    @Override
-    public void onUserListDeletion(twitter4j.User user, twitter4j.UserList ul) {}
-    @Override
-    public void onUserProfileUpdate(twitter4j.User user) {}
-    @Override
-    public void onBlock(twitter4j.User user, twitter4j.User user1) {}
-    @Override
-    public void onUnblock(twitter4j.User user, twitter4j.User user1) {}
-    @Override
-    public void onDeletionNotice(twitter4j.StatusDeletionNotice sdn) {}
-    @Override
-    public void onTrackLimitationNotice(int i) {}
-    @Override
-    public void onScrubGeo(long l, long l1) {}
-    @Override
-    public void onStallWarning(twitter4j.StallWarning sw) {}
+    @Override public void onDeletionNotice(long l, long l1) {}
+    @Override public void onFriendList(long[] longs) {}
+    @Override public void onFavorite(twitter4j.User user, twitter4j.User user1, Status status) {}
+    @Override public void onUnfavorite(twitter4j.User user, twitter4j.User user1, Status status) {}
+    @Override public void onUserListMemberAddition(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
+    @Override public void onUserListMemberDeletion(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
+    @Override public void onUserListSubscription(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
+    @Override public void onUserListUnsubscription(twitter4j.User user, twitter4j.User user1, twitter4j.UserList ul) {}
+    @Override public void onUserListCreation(twitter4j.User user, twitter4j.UserList ul) {}
+    @Override public void onUserListUpdate(twitter4j.User user, twitter4j.UserList ul) {}
+    @Override public void onUserListDeletion(twitter4j.User user, twitter4j.UserList ul) {}
+    @Override public void onUserProfileUpdate(twitter4j.User user) {}
+    @Override public void onBlock(twitter4j.User user, twitter4j.User user1) {}
+    @Override public void onUnblock(twitter4j.User user, twitter4j.User user1) {}
+    @Override public void onDeletionNotice(twitter4j.StatusDeletionNotice sdn) {}
+    @Override public void onTrackLimitationNotice(int i) {}
+    @Override public void onScrubGeo(long l, long l1) {}
+    @Override public void onStallWarning(twitter4j.StallWarning sw) {}
 }
