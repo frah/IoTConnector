@@ -6,7 +6,7 @@ import iotc.event.CommandEventListener;
 import iotc.medium.Medium;
 
 /**
- *
+ * 受信したメッセージの解釈，コマンドの実行を行う
  * @author atsushi-o
  */
 public class CommandOperator implements CommandEventListener {

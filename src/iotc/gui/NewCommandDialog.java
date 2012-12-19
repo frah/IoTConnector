@@ -1,11 +1,14 @@
 package iotc.gui;
 
-import java.util.List;
 import iotc.db.Command;
 import iotc.db.CommandType;
+import iotc.db.PowerEnum;
 import javax.swing.JOptionPane;
-import org.itolab.morihit.clinkx.*;
 import javax.swing.table.DefaultTableModel;
+import org.itolab.morihit.clinkx.UPnPRemoteAction;
+import org.itolab.morihit.clinkx.UPnPRemoteActionArgument;
+import org.itolab.morihit.clinkx.UPnPRemoteDevice;
+import org.itolab.morihit.clinkx.UPnPRemoteService;
 
 /**
  * 新しいコマンドを登録するダイアログ
@@ -43,7 +46,7 @@ public class NewCommandDialog extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
-        powerCombo = new javax.swing.JComboBox<Integer>();
+        powerCombo = new javax.swing.JComboBox(PowerEnum.values());
         aliasTextField = new javax.swing.JTextField();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -113,10 +116,6 @@ public class NewCommandDialog extends javax.swing.JDialog {
         jLabel4.setText("Power");
 
         jLabel5.setText("Alias");
-
-        for (int i = 0; i <= 5; i++) {
-            powerCombo.addItem(i);
-        }
 
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -234,7 +233,7 @@ public class NewCommandDialog extends javax.swing.JDialog {
         this.ret = new Command();
         ret.setName(nameTextField.getText());
         ret.setType(CommandType.UPnPAction.getId());
-        ret.setPower(powerCombo.getItemAt(powerCombo.getSelectedIndex()));
+        ret.setPower(powerCombo.getItemAt(powerCombo.getSelectedIndex()).getId());
         ret.setAliasName(aliasTextField.getText());
 
         /* generate command string */
@@ -283,6 +282,6 @@ public class NewCommandDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton okButton;
-    private javax.swing.JComboBox<Integer> powerCombo;
+    private javax.swing.JComboBox<PowerEnum> powerCombo;
     // End of variables declaration//GEN-END:variables
 }

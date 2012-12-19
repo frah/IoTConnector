@@ -72,7 +72,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         aliasField = new javax.swing.JTextField();
-        powerCombo = new javax.swing.JComboBox<Integer>(new Integer[]{0, 1, 2, 3, 4, 5});
+        powerCombo = new javax.swing.JComboBox(PowerEnum.values());
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
@@ -254,7 +254,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
 
         Command c = new Command();
         c.setName(nameField.getText());
-        c.setPower(powerCombo.getItemAt(powerCombo.getSelectedIndex()));
+        c.setPower(powerCombo.getItemAt(powerCombo.getSelectedIndex()).getId());
         c.setType(CommandType.SunSPOT.getId());
         c.setDevice(deviceCombo.getItemAt(deviceCombo.getSelectedIndex()));
         c.setAliasName(aliasField.getText());
@@ -362,7 +362,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField nameField;
     private javax.swing.JButton okButton;
-    private javax.swing.JComboBox<Integer> powerCombo;
+    private javax.swing.JComboBox<PowerEnum> powerCombo;
     private javax.swing.JComboBox<Room> roomCombo;
     private javax.swing.JButton sendReqButton;
     // End of variables declaration//GEN-END:variables
