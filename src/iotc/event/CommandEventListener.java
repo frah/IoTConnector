@@ -1,5 +1,8 @@
 package iotc.event;
 
+import iotc.db.Log;
+import iotc.db.User;
+
 /**
  * 通信媒体がコマンドを受信した際のイベントリスナ
  * @author atsushi-o
@@ -7,9 +10,9 @@ package iotc.event;
 public interface CommandEventListener {
     /**
      * コマンド受信イベント
-     * @param userId 送信元ユーザID
+     * @param user 送信元ユーザ
      * @param command コマンド本文
-     * @param replyId 返答コマンドであった場合，対象のログIDが入る．そうでない場合は-1を入れること．
+     * @param reply このイベントに対応するログインスタンス
      */
-    void onReceiveCommand(int userId, String command, int replyId);
+    void onReceiveCommand(User user, String command, Log log);
 }

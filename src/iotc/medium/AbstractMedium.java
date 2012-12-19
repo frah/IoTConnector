@@ -1,8 +1,10 @@
 package iotc.medium;
 
-import java.util.Arrays;
-import java.util.ArrayList;
+import iotc.db.Log;
+import iotc.db.User;
 import iotc.event.CommandEventListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * 通信媒体の抽象クラス
@@ -18,7 +20,7 @@ public abstract class AbstractMedium {
      * @param message メッセージ本文
      * @return 送信成否
      */
-    public abstract boolean Send(int logId, int userId, String message);
+    public abstract boolean Send(Log log, User user, String message);
 
     /**
      * メッセージ受信イベントのリスナを登録
@@ -36,11 +38,11 @@ public abstract class AbstractMedium {
     }
     /**
      * リスナにコマンド受信通知を送る
-     * @see iotc.event.CommandEventListener#onReceiveCommand(int, java.lang.String, int) 
+     * @see iotc.event.CommandEventListener#onReceiveCommand(iotc.db.User, java.lang.String, iotc.db.Log)
      */
-    protected void fireReceiveEvent(int userId, String command, int replyId) {
+    protected void fireReceiveEvent(User user, String command, Log reply) {
         for (CommandEventListener l : listeners) {
-            l.onReceiveCommand(userId, command, replyId);
+            l.onReceiveCommand(user, command, reply);
         }
     }
 }

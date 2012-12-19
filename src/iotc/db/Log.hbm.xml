@@ -33,4 +33,9 @@
             <one-to-many class="iotc.db.Log" />
         </set>
     </class>
+    <query name="Log.findFromMediumId">
+        <![CDATA[
+        from iotc.db.Log as log where log.mediumId = :mediumId
+        ]]>
+    </query>
 </hibernate-mapping>
