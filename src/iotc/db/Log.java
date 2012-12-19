@@ -32,12 +32,13 @@ public class Log  implements java.io.Serializable {
      private Command command;
      private String comVariable;
      private int state;
+     private String mediumId;
      private Set logs = new HashSet(0);
 
     public Log() {
     }
 
-	
+
     public Log(User user, int state) {
         this.user = user;
         this.state = state;
@@ -50,14 +51,14 @@ public class Log  implements java.io.Serializable {
        this.state = state;
        this.logs = logs;
     }
-   
+
      @Id @GeneratedValue(strategy=IDENTITY)
-    
+
     @Column(name="id", unique=true, nullable=false)
     public Integer getId() {
         return this.id;
     }
-    
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -66,7 +67,7 @@ public class Log  implements java.io.Serializable {
     public User getUser() {
         return this.user;
     }
-    
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -75,7 +76,7 @@ public class Log  implements java.io.Serializable {
     public Log getLog() {
         return this.log;
     }
-    
+
     public void setLog(Log log) {
         this.log = log;
     }
@@ -84,33 +85,43 @@ public class Log  implements java.io.Serializable {
     public Command getCommand() {
         return this.command;
     }
-    
+
     public void setCommand(Command command) {
         this.command = command;
     }
-    
+
     @Column(name="com_variable", length=65535)
     public String getComVariable() {
         return this.comVariable;
     }
-    
+
     public void setComVariable(String comVariable) {
         this.comVariable = comVariable;
     }
-    
+
     @Column(name="state", nullable=false)
     public int getState() {
         return this.state;
     }
-    
+
     public void setState(int state) {
         this.state = state;
     }
+
+    @Column(name="medium_id", nullable=false)
+    public String getMediumId() {
+        return this.mediumId;
+    }
+
+    public void setMediumId(String mediumId) {
+        this.mediumId = mediumId;
+    }
+
 @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="log")
     public Set getLogs() {
         return this.logs;
     }
-    
+
     public void setLogs(Set logs) {
         this.logs = logs;
     }

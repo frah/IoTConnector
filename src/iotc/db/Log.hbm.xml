@@ -23,6 +23,9 @@
         <property name="state" type="int">
             <column name="state" not-null="true" />
         </property>
+        <property name="mediumId" type="string">
+            <column name="medium_id" not-null="true" />
+        </property>
         <set name="logs" inverse="true">
             <key>
                 <column name="relational_log" />

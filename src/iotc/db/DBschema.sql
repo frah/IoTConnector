@@ -87,8 +87,10 @@ CREATE TABLE `log` (
     `com_id` integer unsigned,
     `com_variable` text,
     `state` integer(1) NOT NULL,
+    `medium_id` varchar(255) NOT NULL,
     `relational_log` integer unsigned,
     PRIMARY KEY (`id`),
+    KEY `medium` (`medium_id`),
     FOREIGN KEY (`user_id`) REFERENCES user (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`com_id`) REFERENCES command (`id`) ON DELETE SET NULL,
     FOREIGN KEY (`relational_log`) REFERENCES log (`id`) ON DELETE CASCADE
