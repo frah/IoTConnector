@@ -85,7 +85,7 @@
             </Property>
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
-            <Property name="text" type="java.lang.String" value="Apache Commons Codec 1.7&#xa;Apache Commons Collections 3.2.1&#xa;Apache Xerces&#xa;http://www.apache.org/licenses/LICENSE-2.0&#xa;--&#xa;Collections Generic 4.0.1&#xa;http://www.apache.org/licenses/LICENSE-2.0&#xa;--&#xa;CyberLink for Java&#xa;Copyright (c) 2003-2010, Satoshi Konno&#xa;http://cgupnpjava.svn.sourceforge.net/viewvc/cgupnpjava/trunk/LICENSE.txt&#xa;--&#xa;Hibernate 4.1.8&#xa;http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html&#xa;--&#xa;JParsec 2.0.1&#xa;http://www.apache.org/licenses/LICENSE-2.0&#xa;--&#xa;Twitter4J 3.0.2&#xa;http://www.apache.org/licenses/LICENSE-2.0"/>
+            <Property name="text" type="java.lang.String" value="Apache Commons Codec 1.7&#xa;Apache Commons Collections 3.2.1&#xa;Apache Commons Lang 3.1&#xa;Apache Xerces&#xa;http://www.apache.org/licenses/LICENSE-2.0&#xa;--&#xa;Collections Generic 4.0.1&#xa;http://www.apache.org/licenses/LICENSE-2.0&#xa;--&#xa;CyberLink for Java&#xa;Copyright (c) 2003-2010, Satoshi Konno&#xa;http://cgupnpjava.svn.sourceforge.net/viewvc/cgupnpjava/trunk/LICENSE.txt&#xa;--&#xa;Hibernate 4.1.8&#xa;http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html&#xa;--&#xa;JParsec 2.0.1&#xa;http://www.apache.org/licenses/LICENSE-2.0&#xa;--&#xa;Twitter4J 3.0.2&#xa;http://www.apache.org/licenses/LICENSE-2.0"/>
             <Property name="caretPosition" type="int" value="0"/>
             <Property name="enabled" type="boolean" value="false"/>
             <Property name="focusable" type="boolean" value="false"/>
