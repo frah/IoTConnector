@@ -47,7 +47,7 @@ public class AboutDialog extends javax.swing.JDialog {
         jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
-        jTextArea1.setText("Apache Commons Codec 1.7\nApache Commons Collections 3.2.1\nApache Commons Lang 3.1\nApache Xerces\nhttp://www.apache.org/licenses/LICENSE-2.0\n--\nCollections Generic 4.0.1\nhttp://www.apache.org/licenses/LICENSE-2.0\n--\nCyberLink for Java\nCopyright (c) 2003-2010, Satoshi Konno\nhttp://cgupnpjava.svn.sourceforge.net/viewvc/cgupnpjava/trunk/LICENSE.txt\n--\nHibernate 4.1.8\nhttp://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\n--\nJParsec 2.0.1\nhttp://www.apache.org/licenses/LICENSE-2.0\n--\nTwitter4J 3.0.2\nhttp://www.apache.org/licenses/LICENSE-2.0");
+        jTextArea1.setText("Apache Commons Codec 1.7\nApache Commons Collections 3.2.1\nApache Xerces\nhttp://www.apache.org/licenses/LICENSE-2.0\n--\nCollections Generic 4.0.1\nhttp://www.apache.org/licenses/LICENSE-2.0\n--\nCyberLink for Java\nCopyright (c) 2003-2010, Satoshi Konno\nhttp://cgupnpjava.svn.sourceforge.net/viewvc/cgupnpjava/trunk/LICENSE.txt\n--\nHibernate 4.1.8\nhttp://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\n--\nJParsec 2.0.1\nhttp://www.apache.org/licenses/LICENSE-2.0\n--\nTwitter4J 3.0.2\nhttp://www.apache.org/licenses/LICENSE-2.0");
         jTextArea1.setCaretPosition(0);
         jTextArea1.setEnabled(false);
         jTextArea1.setFocusable(false);
