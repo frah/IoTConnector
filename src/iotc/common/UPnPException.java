@@ -1,4 +1,4 @@
-package iotc;
+package iotc.common;
 
 /**
  * UPnP関連の例外

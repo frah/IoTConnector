@@ -335,7 +335,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
                 this.upprsv = upprd.getRemoteStateVariable("IRCommand");
                 this.upprsv.subscribe();
             }
-        } catch (iotc.UPnPException ex) {
+        } catch (iotc.common.UPnPException ex) {
             LOG.log(Level.WARNING, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } catch (NullPointerException ex) {

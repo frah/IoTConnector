@@ -1,7 +1,7 @@
 package iotc.db;
 
 import iotc.UPnPDevices;
-import iotc.UPnPException;
+import iotc.common.UPnPException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.itolab.morihit.clinkx.UPnPRemoteAction;
