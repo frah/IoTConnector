@@ -1,6 +1,8 @@
 package iotc.gui;
 
 import iotc.db.*;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -23,7 +25,7 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
  * 新しいデバイスを追加するためのダイアログ
  * @author atsushi-o
  */
-public class NewDeviceDialog extends javax.swing.JDialog {
+public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListener {
     private UPnPRemoteDevice upprd;
 
     /**
@@ -34,6 +36,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         this.upprd = device;
         initComponents();
         updateTable();
+        DBEventListenerManager.getInstance().addListener(this, "Room|SensorType");
     }
 
     /**
@@ -240,7 +243,6 @@ public class NewDeviceDialog extends javax.swing.JDialog {
     private void addRoomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRoomButtonActionPerformed
         NewRoomDialog nr = new NewRoomDialog((javax.swing.JFrame)this.getParent(), true);
         nr.setVisible(true);
-        updateRoomList();
     }//GEN-LAST:event_addRoomButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -379,7 +381,6 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         if (c.getSelectedIndex() == c.getItemCount()-1) {
             NewSensorTypeDialog nstd = new NewSensorTypeDialog((javax.swing.JFrame)this.getParent(), true);
             nstd.setVisible(true);
-            updateSensorTypeCombo();
             if (c.getItemCount() > 1) c.setSelectedIndex(0);
         }
     }
@@ -420,4 +421,46 @@ public class NewDeviceDialog extends javax.swing.JDialog {
     private javax.swing.JTextField udnField;
     private javax.swing.JTable varTable;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onCreate(String entityName, Object entity) {
+        switch (entityName) {
+            case "Room":
+                updateRoomList();
+                break;
+            case "SensorType":
+                updateSensorTypeCombo();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onDelete(String entityName, Object entity) {
+        switch (entityName) {
+            case "Room":
+                updateRoomList();
+                break;
+            case "SensorType":
+                updateSensorTypeCombo();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onUpdate(String entityName, Object entity) {
+        switch (entityName) {
+            case "Room":
+                updateRoomList();
+                break;
+            case "SensorType":
+                updateSensorTypeCombo();
+                break;
+            default:
+                break;
+        }
+    }
 }

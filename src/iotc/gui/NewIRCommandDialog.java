@@ -2,12 +2,16 @@ package iotc.gui;
 
 import iotc.UPnPDevices;
 import iotc.db.*;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
+import iotc.event.UPnPEventListener;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.hibernate.CacheMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -20,7 +24,7 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
  * 新しいSunSPOTを介した制御コマンドを登録するためのダイアログ
  * @author atsushi-o
  */
-public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.event.UPnPEventListener {
+public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEventListener, DBEventListener {
     private UPnPRemoteStateVariable upprsv;
     private static Logger LOG = Logger.getLogger(NewIRCommandDialog.class.getName());
 
@@ -46,6 +50,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
             }
         }
         UPnPDevices.getInstance().addListener(this);
+        DBEventListenerManager.getInstance().addListener(this, "Room|Device");
     }
 
     /**
@@ -235,6 +240,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
 
     private void updateRoomCombo() {
         Session s = HibernateUtil.getSessionFactory().openSession();
+        s.setCacheMode(CacheMode.IGNORE);
         Query q = s.getNamedQuery("Room.findAll");
 
         roomCombo.removeAllItems();;
@@ -385,6 +391,34 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
             aliasField.setEnabled(true);
             okButton.setEnabled(true);
             this.upprsv.unsubscribe();
+        }
+    }
+
+    @Override
+    public void onCreate(String entityName, Object entity) {
+        updateComponent(entityName);
+    }
+
+    @Override
+    public void onDelete(String entityName, Object entity) {
+        updateComponent(entityName);
+    }
+
+    @Override
+    public void onUpdate(String entityName, Object entity) {
+        updateComponent(entityName);
+    }
+
+    private void updateComponent(String entityName) {
+        switch (entityName) {
+            case "Room":
+                updateRoomCombo();
+                break;
+            case "Device":
+                roomComboActionPerformed(null);
+                break;
+            default:
+                break;
         }
     }
 }

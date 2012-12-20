@@ -7,9 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.hibernate.Session;
-import org.itolab.morihit.clinkx.*;
-import java.util.Set;
-import iotc.db.Sensor;
+import org.itolab.morihit.clinkx.UPnPControlPoint;
+import org.itolab.morihit.clinkx.UPnPDeviceChangeListener;
+import org.itolab.morihit.clinkx.UPnPRemoteDevice;
+import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
 /**
  * UPnPデバイスを管理するクラス

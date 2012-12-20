@@ -2,6 +2,8 @@ package iotc.gui;
 
 import iotc.common.UPnPException;
 import iotc.db.*;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
 import iotc.event.UPnPEventListener;
 import iotc.gui.ToolTipTree.ToolTipTreeNode;
 import java.util.ArrayList;
@@ -24,7 +26,7 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
  * メインウィンドウ
  * @author atsushi-o
  */
-public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventListener {
+public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventListener, DBEventListener {
     private Device currentView;
     private Device lastRightClicked;
     private ArrayList<UPnPRemoteStateVariable> curSubscribe;
@@ -52,6 +54,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
         curSubscribe = new ArrayList();
         initComponents();
+        DBEventListenerManager.getInstance().addListener(this, "Room|Device");
     }
 
     /**
@@ -264,8 +267,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     private void addRoomMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRoomMenuItemActionPerformed
         NewRoomDialog nr = new NewRoomDialog(this, true);
         nr.setVisible(true);
-
-        updateTree();
     }//GEN-LAST:event_addRoomMenuItemActionPerformed
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
@@ -302,8 +303,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         } finally {
             s.close();
         }
-
-        updateTree();
     }//GEN-LAST:event_dDelMenuItemActionPerformed
 
     private void aComMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aComMenuItemActionPerformed
@@ -394,61 +393,64 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
                 JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION) {
             NewDeviceDialog w = new NewDeviceDialog(this, true, device);
             w.setVisible(true);
-            updateTree();
         }
     }
 
     @Override
     public void onDetectKnownDevice(Device device) {
-        DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+        synchronized (this) {
+            DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
 
-        Enumeration allNode = root.postorderEnumeration();
-        while (allNode.hasMoreElements()) {
-            DefaultMutableTreeNode n = (DefaultMutableTreeNode)allNode.nextElement();
-            Object o = n.getUserObject();
-            if (o instanceof Device) {
-                if (((Device)o).getId() == device.getId()) {
-                    // already added device
+            Enumeration allNode = root.postorderEnumeration();
+            while (allNode.hasMoreElements()) {
+                DefaultMutableTreeNode n = (DefaultMutableTreeNode)allNode.nextElement();
+                Object o = n.getUserObject();
+                if (o instanceof Device) {
+                    if (device.getId().equals(((Device)o).getId())) {
+                        // already added device
+                        return;
+                    }
+                }
+            }
+
+            Enumeration c = root.children();
+            while (c.hasMoreElements()) {
+                DefaultMutableTreeNode n = (DefaultMutableTreeNode)c.nextElement();
+                if (((Room)n.getUserObject()).getId() == device.getRoom().getId()) {
+                    n.add(new DefaultMutableTreeNode(device));
+                    model.reload();
                     return;
                 }
             }
-        }
 
-        Enumeration c = root.children();
-        while (c.hasMoreElements()) {
-            DefaultMutableTreeNode n = (DefaultMutableTreeNode)c.nextElement();
-            if (((Room)n.getUserObject()).getId() == device.getRoom().getId()) {
-                n.add(new DefaultMutableTreeNode(device));
-                model.reload();
-                return;
-            }
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(device.getRoom());
+            node.add(new DefaultMutableTreeNode(device));
+            root.add(node);
+            model.reload();
         }
-
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(device.getRoom());
-        node.add(new DefaultMutableTreeNode(device));
-        root.add(node);
-        model.reload();
     }
 
     @Override
     public void onFailDevice(Device device) {
-        DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+        synchronized (this) {
+            DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
 
-        Enumeration allNode = root.postorderEnumeration();
-        while (allNode.hasMoreElements()) {
-            DefaultMutableTreeNode n = (DefaultMutableTreeNode)allNode.nextElement();
-            Object o = n.getUserObject();
-            if (o instanceof Device) {
-                if (((Device)o).getId() == device.getId()) {
-                    n.removeFromParent();
-                    break;
+            Enumeration allNode = root.postorderEnumeration();
+            while (allNode.hasMoreElements()) {
+                DefaultMutableTreeNode n = (DefaultMutableTreeNode)allNode.nextElement();
+                Object o = n.getUserObject();
+                if (o instanceof Device) {
+                    if (((Device)o).getId() == device.getId()) {
+                        n.removeFromParent();
+                        break;
+                    }
                 }
             }
-        }
 
-        model.reload();
+            model.reload();
+        }
     }
 
     @Override
@@ -469,7 +471,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
      * 部屋のツリーを更新
      */
     private void updateTree() {
-        synchronized (roomTree) {
+        synchronized (this) {
             DefaultTreeModel model = (DefaultTreeModel)roomTree.getModel();
             DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
             root.removeAllChildren();
@@ -551,5 +553,20 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         for (int i = dtm.getRowCount() - 1; i >= 0 ; i--) {
             dtm.removeRow(i);
         }
+    }
+
+    @Override
+    public void onCreate(String entityName, Object entity) {
+        updateTree();
+    }
+
+    @Override
+    public void onDelete(String entityName, Object entity) {
+        updateTree();
+    }
+
+    @Override
+    public void onUpdate(String entityName, Object entity) {
+        updateTree();
     }
 }

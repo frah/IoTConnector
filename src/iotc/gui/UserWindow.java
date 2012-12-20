@@ -1,6 +1,8 @@
 package iotc.gui;
 
 import iotc.db.*;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
 import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.List;
@@ -9,17 +11,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableColumn;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.reflections.Reflections;
 
 /**
  * ユーザの管理ウインドウ
  * @author atsushi-o
  */
-public class UserWindow extends javax.swing.JFrame {
+public class UserWindow extends javax.swing.JFrame implements DBEventListener {
     enum Mode {
         SELECTING,
         EDITING
@@ -37,6 +36,7 @@ public class UserWindow extends javax.swing.JFrame {
     public UserWindow() {
         initComponents();
         currentMode = EnumSet.noneOf(Mode.class);
+        DBEventListenerManager.getInstance().addListener(this, "User|Power");
     }
 
     /**
@@ -106,6 +106,11 @@ public class UserWindow extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Users - IoTConnector");
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         userList.setModel(new javax.swing.DefaultListModel<User>());
         userList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -365,7 +370,6 @@ public class UserWindow extends javax.swing.JFrame {
         } finally {
             s.close();
         }
-        loadUsers();
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
@@ -422,7 +426,6 @@ public class UserWindow extends javax.swing.JFrame {
             deleteButton.setEnabled(true);
             editButton.setText("Edit");
             currentMode.remove(Mode.EDITING);
-            loadUsers();
         } else {
             currentMode.add(Mode.EDITING);
             editButton.setText("Save");
@@ -445,6 +448,10 @@ public class UserWindow extends javax.swing.JFrame {
         model.removeAlias(aliasTable.getSelectedRow());
     }//GEN-LAST:event_delRowActionPerformed
 
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        DBEventListenerManager.getInstance().removeListener(this);
+    }//GEN-LAST:event_formWindowClosed
+
     private javax.swing.JComboBox<String> getMediumCombo() {
         java.util.Vector<String> strs = new java.util.Vector();
         Reflections ref = new Reflections("iotc.medium");
@@ -456,6 +463,7 @@ public class UserWindow extends javax.swing.JFrame {
     }
     private void loadUsers() {
         Session s = HibernateUtil.getSessionFactory().openSession();
+        s.setCacheMode(CacheMode.IGNORE);
         Query q = s.getNamedQuery("User.findAll");
         List<User> users = (List<User>)q.list();
         DefaultListModel<User> model = (DefaultListModel<User>)userList.getModel();
@@ -502,4 +510,25 @@ public class UserWindow extends javax.swing.JFrame {
     private javax.swing.JComboBox<PowerType> typeCombo;
     private javax.swing.JList<User> userList;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onCreate(String entityName, Object entity) {
+        if (entityName.equals("User")) {
+            loadUsers();
+        }
+    }
+
+    @Override
+    public void onDelete(String entityName, Object entity) {
+        if (entityName.equals("User")) {
+            loadUsers();
+        }
+    }
+
+    @Override
+    public void onUpdate(String entityName, Object entity) {
+        if (entityName.equals("User")) {
+            loadUsers();
+        }
+    }
 }
