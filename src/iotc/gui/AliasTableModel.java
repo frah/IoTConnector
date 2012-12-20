@@ -89,7 +89,7 @@ public class AliasTableModel extends DefaultTableModel {
             sb.append(e.getKey()).append(":").append(e.getValue());
             sb.append(",");
         }
-        return sb.substring(0, sb.length()-1);
+        return sb.length()!=0?sb.substring(0, sb.length()-1):"";
     }
     /**
      * 全てのAliasを削除する

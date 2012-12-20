@@ -284,6 +284,7 @@ public class UserWindow extends javax.swing.JFrame {
 
     private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
         if (evt.getValueIsAdjusting()) return;
+        if (userList.getModel().getSize() == 0 || userList.isSelectionEmpty()) return;
         Session s = HibernateUtil.getSessionFactory().openSession();
         User u = (User)s.load(User.class, userList.getSelectedValue().getId());
         Power p = (Power)u.getPowersForUserId().toArray()[0];
@@ -341,6 +342,8 @@ public class UserWindow extends javax.swing.JFrame {
         typeCombo.setSelectedItem(PowerType.BASIC);
 
         changeEditable(true);
+        editButton.setText("Save");
+        editButton.setEnabled(true);
         currentMode.clear();
         currentMode.add(Mode.EDITING);
     }//GEN-LAST:event_addButtonActionPerformed
@@ -362,6 +365,7 @@ public class UserWindow extends javax.swing.JFrame {
         } finally {
             s.close();
         }
+        loadUsers();
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
