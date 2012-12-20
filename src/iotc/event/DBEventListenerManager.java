@@ -1,8 +1,8 @@
 package iotc.event;
 
-import java.util.regex.Pattern;
-import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * データベースのイベントリスナを管理，イベントを発生
@@ -65,6 +65,7 @@ public class DBEventListenerManager {
      * @see iotc.event.DBEventListener#onDelete(java.lang.String, java.lang.Object)
      */
     public void fireOnDelete(String sender, Object entity) {
+        System.out.println("onDelete: "+sender+", "+entity);
         for (Entry<DBEventListener,String> e : this.listeners.entrySet()) {
             if (Pattern.matches(e.getValue(), sender)) {
                 e.getKey().onDelete(sender, entity);

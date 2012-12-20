@@ -20,5 +20,14 @@
     <mapping resource="iotc/db/User.hbm.xml"/>
     <mapping resource="iotc/db/Task.hbm.xml"/>
     <mapping resource="iotc/db/Sensor.hbm.xml"/>
+    <event type="post-insert">
+        <listener class="iotc.event.JpaEventListener" />
+    </event>
+    <event type="post-delete">
+        <listener class="iotc.event.JpaEventListener" />
+    </event>
+    <event type="post-update">
+        <listener class="iotc.event.JpaEventListener" />
+    </event>
   </session-factory>
 </hibernate-configuration>
