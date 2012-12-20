@@ -16,4 +16,11 @@ public enum PowerType {
     public int getId() {
         return this.id;
     }
+    public static PowerType valueOf(Integer id) {
+        if (id == null) return null;
+        for (PowerType t : values()) {
+            if (t.id == id) return t;
+        }
+        return null;
+    }
 }

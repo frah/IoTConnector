@@ -33,6 +33,11 @@
             <one-to-many class="iotc.db.Power" />
         </set>
     </class>
+    <query name="User.findAll">
+        <![CDATA[
+        from iotc.db.User
+        ]]>
+    </query>
     <query name="User.findFromAlias">
         <![CDATA[
         from iotc.db.User as user where user.aliasName like :alias

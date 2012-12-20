@@ -91,7 +91,7 @@ public class User  implements java.io.Serializable {
     public void setPowersForAuthBy(Set powersForAuthBy) {
         this.powersForAuthBy = powersForAuthBy;
     }
-@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="userByUserId")
+@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, mappedBy="userByUserId")
     public Set getPowersForUserId() {
         return this.powersForUserId;
     }

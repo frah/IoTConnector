@@ -1,6 +1,6 @@
 package iotc.gui;
 
-import iotc.UPnPException;
+import iotc.common.UPnPException;
 import iotc.db.*;
 import iotc.event.UPnPEventListener;
 import iotc.gui.ToolTipTree.ToolTipTreeNode;
@@ -80,6 +80,8 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         jMenu3 = new javax.swing.JMenu();
         addRoomMenuItem = new javax.swing.JMenuItem();
         addIRComMenuItem = new javax.swing.JMenuItem();
+        jMenu4 = new javax.swing.JMenu();
+        userWMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
 
@@ -219,6 +221,18 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
         menuBar.add(jMenu3);
 
+        jMenu4.setText("Window");
+
+        userWMenuItem.setText("User window");
+        userWMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                userWMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu4.add(userWMenuItem);
+
+        menuBar.add(jMenu4);
+
         jMenu2.setText("Help");
 
         aboutMenuItem.setText("About");
@@ -342,6 +356,10 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         new NewIRCommandDialog(this, true, null).setVisible(true);
     }//GEN-LAST:event_addIRComMenuItemActionPerformed
 
+    private void userWMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userWMenuItemActionPerformed
+        new UserWindow().setVisible(true);
+    }//GEN-LAST:event_userWMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aComMenuItem;
     private javax.swing.JMenuItem aboutMenuItem;
@@ -353,6 +371,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -361,6 +380,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem quitMenuItem;
     private javax.swing.JTree roomTree;
+    private javax.swing.JMenuItem userWMenuItem;
     private javax.swing.JTable varTable;
     // End of variables declaration//GEN-END:variables
 
