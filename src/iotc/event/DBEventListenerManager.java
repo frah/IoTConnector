@@ -65,7 +65,6 @@ public class DBEventListenerManager {
      * @see iotc.event.DBEventListener#onDelete(java.lang.String, java.lang.Object)
      */
     public void fireOnDelete(String sender, Object entity) {
-        System.out.println("onDelete: "+sender+", "+entity);
         for (Entry<DBEventListener,String> e : this.listeners.entrySet()) {
             if (Pattern.matches(e.getValue(), sender)) {
                 e.getKey().onDelete(sender, entity);
