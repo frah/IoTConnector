@@ -5,9 +5,14 @@ package iotc.db;
  * @author atsushi-o
  */
 public enum PowerType {
+    /** 機能制限のないユーザ */
     BASIC (0),
+    /** 制限時間のあるユーザ */
     DATE_LIMITED (1),
-    COUNT_LIMITED (2);
+    /** 回数制限のあるユーザ */
+    COUNT_LIMITED (2),
+    /** 機能制限のあるユーザ */
+    COMMAND_LIMITED (3);
 
     private final int id;
     private PowerType(final int id) {

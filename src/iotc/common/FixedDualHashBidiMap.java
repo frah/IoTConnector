@@ -1,4 +1,4 @@
-package iotc;
+package iotc.common;
 
 import java.io.Serializable;
 import java.util.Map;
