@@ -71,6 +71,7 @@ public class IoTConnector {
         }
 
         if (debug) {
+            LOG.info("Start with DEBUG MODE");
             dummy = new ArrayList();
             dummy.add(new DummyUPnPDevice("Dummy-c0d2c761-777a-43bb-be25-7e9ccd714044"));
             dsun = new DummySunSPOTDevice("SunSPOT-dummy");
