@@ -82,7 +82,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         String mes = status.getText();
         if (!mes.startsWith(ACCOUNT)) return;
 
-        mes = mes.substring(mes.indexOf(ACCOUNT)+1);
+        mes = mes.substring(mes.indexOf(ACCOUNT)+ACCOUNT.length()+1);
 
         /* Search user from DB
             and if user is not saved yet, create new user entity */
