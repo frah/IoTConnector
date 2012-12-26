@@ -63,9 +63,11 @@ CREATE TABLE `device` (
     `UDN` varchar(255) NOT NULL,
     `type` integer(1) NOT NULL,
     `explanation` varchar(255) DEFAULT '',
+    `alias_name` varchar(255),
     PRIMARY KEY (`id`),
     KEY `name` (`name`),
     KEY `UDN` (`UDN`),
+    KEY `alias_name` (`alias_name`),
     FOREIGN KEY (`room_id`) REFERENCES room (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 
@@ -78,7 +80,8 @@ CREATE TABLE `command` (
     `command` text NOT NULL,
     `alias_name` varchar(255),
     PRIMARY KEY (`id`),
-    FOREIGN KEY (`device_id`) REFERENCES device (`id`) ON DELETE CASCADE
+    FOREIGN KEY (`device_id`) REFERENCES device (`id`) ON DELETE CASCADE,
+    KEY `alias_name` (`alias_name`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 
 CREATE TABLE `log` (

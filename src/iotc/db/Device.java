@@ -37,6 +37,7 @@ public class Device  implements java.io.Serializable {
      private String explanation;
      private Set commands = new HashSet(0);
      private Set sensors = new HashSet(0);
+     private String aliasName;
 
     public Device() {
     }
@@ -77,7 +78,7 @@ public class Device  implements java.io.Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
-@ManyToOne(fetch=FetchType.LAZY)
+@ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name="room_id", nullable=false)
     public Room getRoom() {
         return this.room;
@@ -137,6 +138,15 @@ public class Device  implements java.io.Serializable {
 
     public void setSensors(Set sensors) {
         this.sensors = sensors;
+    }
+
+    @Column(name="alias_name")
+    public String getAliasName() {
+        return this.aliasName;
+    }
+
+    public void setAliasName(String aliasName) {
+        this.aliasName = aliasName;
     }
 
     @Override

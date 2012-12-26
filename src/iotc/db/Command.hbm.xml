@@ -40,4 +40,12 @@
             <one-to-many class="iotc.db.Log" />
         </set>
     </class>
+    <query name="Command.findFromAlias">
+        <![CDATA[
+        from iotc.db.Command as c
+        left join fetch c.device as d
+        left join fetch d.room
+        where c.aliasName = :alias
+        ]]>
+    </query>
 </hibernate-mapping>

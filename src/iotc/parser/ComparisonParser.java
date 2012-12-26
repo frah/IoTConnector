@@ -90,7 +90,7 @@ public final class ComparisonParser {
         return term(name).retn(value);
     }
 
-    static Parser<Boolean> comparison(Parser<Double> atom) {
+    static Parser<Boolean> comparison(Parser<Boolean> atom) {
         Parser.Reference<Boolean> ref = Parser.newReference();
 
         Parser<Boolean> parser = new OperatorTable<Boolean>()
@@ -98,7 +98,7 @@ public final class ComparisonParser {
                 .infixl(op("&&", BoolOperator.AND), 20)
                 .infixl(op("^", BoolOperator.XOR), 30)
                 .prefix(op("!", UnaryOperator.NOT), 50)
-                .build(ref);
+                .build(atom);
         return parser;
     }
 }

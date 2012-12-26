@@ -66,7 +66,7 @@ public class Sensor  implements java.io.Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
-@ManyToOne(fetch=FetchType.LAZY)
+@ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name="device_id", nullable=false)
     public Device getDevice() {
         return this.device;
@@ -75,7 +75,7 @@ public class Sensor  implements java.io.Serializable {
     public void setDevice(Device device) {
         this.device = device;
     }
-@ManyToOne(fetch=FetchType.LAZY)
+@ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name="type", nullable=false)
     public SensorType getSensorType() {
         return this.sensorType;

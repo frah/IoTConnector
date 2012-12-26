@@ -5,6 +5,8 @@ import iotc.db.Device;
 import iotc.db.Room;
 import iotc.db.Sensor;
 
+import java.util.List;
+
 /**
  * 識別子
  * @author atsushi-o
@@ -13,7 +15,7 @@ public class Identification {
     private Room room;
     private Device device;
     private Command command;
-    private Sensor sensor;
+    private List<Sensor> sensors;
 
     public Identification() {}
     public Identification(Room r) {
@@ -65,15 +67,15 @@ public class Identification {
     /**
      * @return the sensor
      */
-    public Sensor getSensor() {
-        return sensor;
+    public List<Sensor> getSensors() {
+        return sensors;
     }
 
     /**
      * @param sensor the sensor to set
      */
-    public void setSensor(Sensor sensor) {
-        this.sensor = sensor;
+    public void setSensors(List<Sensor> sensor) {
+        this.sensors = sensor;
     }
 
     @Override
@@ -85,8 +87,18 @@ public class Identification {
                 sb.append("::").append(device.getName());
                 if (command != null) {
                     sb.append("::").append(command.getName());
-                } else if (sensor != null) {
-                    sb.append("::").append(sensor.getName());
+                }
+            }
+            if (sensors != null) {
+                sb.append("::");
+                String prefix = sb.toString();
+                sb.setLength(0);
+                for (Sensor s : sensors) {
+                    sb.append(prefix);
+                    if (device == null) {
+                        sb.append(s.getDevice().getName()).append("::");
+                    }
+                    sb.append(s.getSensorType().getName()).append(System.lineSeparator());
                 }
             }
         }

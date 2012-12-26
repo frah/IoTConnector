@@ -34,7 +34,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         t = new TwitterFactory().getInstance();
         ts = new TwitterStreamFactory().getInstance();
         ts.addListener(this);
-        ts.user(new String[]{ACCOUNT});
+        ts.user(new String[]{ACCOUNT.substring(1)});
         relations = new LRUMap(50);
         LOG.info("Twitter stream listening start.");
     }

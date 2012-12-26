@@ -7,10 +7,10 @@
             <column name="id" />
             <generator class="identity" />
         </id>
-        <many-to-one name="device" class="iotc.db.Device" fetch="select">
+        <many-to-one name="device" class="iotc.db.Device" fetch="join">
             <column name="device_id" not-null="true" />
         </many-to-one>
-        <many-to-one name="sensorType" class="iotc.db.SensorType" fetch="select">
+        <many-to-one name="sensorType" class="iotc.db.SensorType" fetch="join">
             <column name="type" not-null="true" />
         </many-to-one>
         <property name="name" type="string">
@@ -39,4 +39,17 @@
             </many-to-many>
         </set>
     </class>
+    <query name="Sensor.findFromDevice">
+        <![CDATA[
+        from iotc.db.Sensor as s where s.device.id = :deviceID
+        ]]>
+    </query>
+    <query name="Sensor.findFromRoomAndType">
+        <![CDATA[
+        from iotc.db.Sensor as s
+        left outer join fetch s.device as d
+        left outer join fetch s.sensorType as st
+        where d.room.id = :roomID and st.name = :type
+        ]]>
+    </query>
 </hibernate-mapping>
