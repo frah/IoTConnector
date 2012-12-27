@@ -292,7 +292,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
         if (userList.getModel().getSize() == 0 || userList.isSelectionEmpty()) return;
         Session s = HibernateUtil.getSessionFactory().openSession();
         User u = (User)s.load(User.class, userList.getSelectedValue().getId());
-        Power p = (Power)u.getPowersForUserId().toArray()[0];
+        Power p = u.getPowerForUserId();
 
         // Update field
         nameField.setText(u.getName());
@@ -384,7 +384,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
             Power p;
             if (currentMode.contains(Mode.SELECTING)) {
                 u = (User)s.load(User.class, userList.getSelectedValue().getId());
-                p = (Power)u.getPowersForUserId().toArray()[0];
+                p = u.getPowerForUserId();
             } else {
                 u = new User();
                 p = new Power();

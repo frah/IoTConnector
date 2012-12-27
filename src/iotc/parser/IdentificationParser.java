@@ -2,10 +2,14 @@ package iotc.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.*;
 import iotc.Identification;
 import iotc.db.*;
 import org.hibernate.*;
+import sun.util.LocaleServiceProviderPool;
+
 import java.util.Set;
 
 /**
@@ -13,7 +17,13 @@ import java.util.Set;
  * @author atsushi-o
  */
 public final class IdentificationParser {
-    private static final Pattern IDPATTERN = Pattern.compile("([^:]+)(::[^:]+)*");
+    private static final Pattern IDPATTERN;
+    private static final Logger LOG;
+    static {
+        IDPATTERN = Pattern.compile("([^:]+)(::[^:]+)*");
+        LOG = Logger.getLogger(IdentificationParser.class.getName());
+    }
+
     public static Identification parse(String idstring) {
         Identification id = new Identification();
         Matcher m = IDPATTERN.matcher(idstring);
@@ -25,6 +35,7 @@ public final class IdentificationParser {
 
         for (int i = 1; i <= m.groupCount(); i++) {
             String str = m.group(i);
+            if (str == null) break;
             switch(i) {
                 case 1: {
                     Query q = s.getNamedQuery("Room.findFromName");
@@ -95,6 +106,35 @@ public final class IdentificationParser {
 
         return id;
     }
+
+    /**
+     * すでにあるIDにコマンド情報を付け足す
+     * @param id
+     * @param command
+     * @return
+     */
+    public static Identification parseCommand(Identification id, String command) {
+        Device d = id.getDevice();
+        if (d == null) return id;
+
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        try {
+            d = (Device)s.load(Device.class, d.getId());
+            for (Command c : (Set<Command>)d.getCommands()) {
+                if (c.getName().equals(command) || c.getAliasName().equals(command)) {
+                    id.setCommand(c);
+                    break;
+                }
+            }
+        } catch (HibernateException ex) {
+            LOG.log(Level.WARNING, "Getting command list failed", ex);
+        } finally {
+            s.close();
+        }
+
+        return id;
+    }
+
     /* インスタンス化抑制 */
     private IdentificationParser() {}
 

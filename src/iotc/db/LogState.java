@@ -5,6 +5,8 @@ package iotc.db;
  * @author atsushi-o
  */
 public enum LogState {
+    /** エラー発生 */
+    ERROR       (-1),
     /** コマンドを受信した（未パース） */
     RECEIVED    (0),
     /** パース完了 */

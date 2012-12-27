@@ -44,6 +44,13 @@
         from iotc.db.Sensor as s where s.device.id = :deviceID
         ]]>
     </query>
+    <query name="Sensor.findFromRoom">
+        <![CDATA[
+        from iotc.db.Sensor as s
+        left outer join fetch s.device as d
+        where d.room.id = :roomID
+        ]]>
+    </query>
     <query name="Sensor.findFromRoomAndType">
         <![CDATA[
         from iotc.db.Sensor as s

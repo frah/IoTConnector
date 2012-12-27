@@ -25,12 +25,7 @@
             </key>
             <one-to-many class="iotc.db.Power" />
         </set>
-        <set name="powersForUserId" inverse="true">
-            <key>
-                <column name="user_id" not-null="true" unique="true" />
-            </key>
-            <one-to-many class="iotc.db.Power" />
-        </set>
+        <one-to-one name="powerForUserId" class="iotc.db.Power" property-ref="userByUserId" cascade="all" fetch="join" outer-join="true" />
     </class>
     <query name="User.findAll">
         <![CDATA[

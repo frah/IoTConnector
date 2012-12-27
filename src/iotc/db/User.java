@@ -4,16 +4,10 @@ package iotc.db;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
+import javax.persistence.*;
+
 import static javax.persistence.GenerationType.IDENTITY;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+
 import java.util.logging.Logger;
 
 /**
@@ -32,7 +26,7 @@ public class User  implements java.io.Serializable {
      private String aliasName;
      private Set logs = new HashSet(0);
      private Set powersForAuthBy = new HashSet(0);
-     private Set powersForUserId = new HashSet(0);
+     private Power powerForUserId;
 
     public User() {
     }
@@ -41,12 +35,12 @@ public class User  implements java.io.Serializable {
     public User(String name) {
         this.name = name;
     }
-    public User(String name, String aliasName, Set logs, Set powersForAuthBy, Set powersForUserId) {
+    public User(String name, String aliasName, Set logs, Set powersForAuthBy, Power powerForUserId) {
        this.name = name;
        this.aliasName = aliasName;
        this.logs = logs;
        this.powersForAuthBy = powersForAuthBy;
-       this.powersForUserId = powersForUserId;
+       this.powerForUserId = powerForUserId;
     }
 
      @Id @GeneratedValue(strategy=IDENTITY)
@@ -93,13 +87,13 @@ public class User  implements java.io.Serializable {
     public void setPowersForAuthBy(Set powersForAuthBy) {
         this.powersForAuthBy = powersForAuthBy;
     }
-@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, mappedBy="userByUserId")
-    public Set getPowersForUserId() {
-        return this.powersForUserId;
+@OneToOne(cascade = CascadeType.ALL, fetch=FetchType.EAGER, mappedBy = "user_id")
+    public Power getPowerForUserId() {
+        return this.powerForUserId;
     }
 
-    public void setPowersForUserId(Set powersForUserId) {
-        this.powersForUserId = powersForUserId;
+    public void setPowerForUserId(Power powerForUserId) {
+        this.powerForUserId = powerForUserId;
     }
 
     public HashMap<String, String> getAliasMap() {
