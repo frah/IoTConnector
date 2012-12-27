@@ -10,7 +10,7 @@
         <many-to-one name="device" class="iotc.db.Device" fetch="join">
             <column name="device_id" not-null="true" />
         </many-to-one>
-        <many-to-one name="sensorType" class="iotc.db.SensorType" fetch="join">
+        <many-to-one name="sensorType" class="iotc.db.SensorType" fetch="join" outer-join="true">
             <column name="type" not-null="true" />
         </many-to-one>
         <property name="name" type="string">

@@ -22,4 +22,8 @@ public class UPnPException extends Exception {
     public UPnPException(String msg) {
         super(msg);
     }
+
+    public UPnPException(String msg, Throwable tr) {
+        super(msg, tr);
+    }
 }

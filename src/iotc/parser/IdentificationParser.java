@@ -139,6 +139,6 @@ public final class IdentificationParser {
     private IdentificationParser() {}
 
     public static void main(String[] arg) {
-        System.out.println(IdentificationParser.parse("リビングON"));
+        System.out.println(IdentificationParser.parse("Living::Temperature"));
     }
 }

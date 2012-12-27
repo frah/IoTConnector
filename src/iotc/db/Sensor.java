@@ -2,6 +2,8 @@ package iotc.db;
 // Generated 2012/12/12 23:32:12 by Hibernate Tools 3.2.1.GA
 
 
+import iotc.common.UPnPException;
+
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -124,9 +126,9 @@ public class Sensor  implements java.io.Serializable {
         this.statisticalMethods = statisticalMethods;
     }
 
-
-
-
+    public Object getValue() throws UPnPException {
+        return EntityMapUtil.dbToUPnP(this).getValue();
+    }
 }
 
 

@@ -39,11 +39,7 @@ public class CommandExpression {
         /** UPnPコマンドを実行する */
         EXEC_COMMAND    (rb.getString("ct.EXEC_COMMAND.regex"), "device", "command") {
             @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
-                if (args.length == 0 || !(args[0] instanceof Identification)) {
-                    throw new IllegalArgumentException();
-                }
-
-                Identification id = (Identification)args[0];
+                Identification id = getIdentification(args);
                 Command c = id.getCommand();
                 User u = log.getUser();
 
@@ -60,11 +56,7 @@ public class CommandExpression {
         /** 指定されたデバイスのコマンド一覧を返す */
         GET_COMLIST     (rb.getString("ct.GET_COMLIST.regex"), "device") {
             @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
-                if (args.length == 0 || !(args[0] instanceof Identification)) {
-                    throw new IllegalArgumentException();
-                }
-
-                Identification id = (Identification)args[0];
+                Identification id = getIdentification(args);
                 User u = log.getUser();
 
                 Device d = (Device)session.load(Device.class, id.getDevice().getId());
@@ -77,7 +69,7 @@ public class CommandExpression {
                 if (sb.length() > 0) {
                     sb.setLength(sb.length()-2);
                 } else {
-                    sb.append(rb.getString("ct.GET_COMLIST.message"));
+                    sb.append(rb.getString("ct.GET_COMLIST.errorMes"));
                 }
 
                 medium.send(log, log.getUser(), sb.toString());
@@ -86,11 +78,7 @@ public class CommandExpression {
         /** 指定された部屋のデバイス一覧を返す */
         GET_DEVLIST     (rb.getString("ct.GET_DEVLIST.regex"), "room") {
             @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
-                if (args.length == 0 || !(args[0] instanceof Identification)) {
-                    throw new IllegalArgumentException();
-                }
-
-                Identification id = (Identification)args[0];
+                Identification id = getIdentification(args);
 
                 Room r = (Room)session.load(Room.class, id.getRoom().getId());
                 StringBuilder sb = new StringBuilder();
@@ -118,11 +106,7 @@ public class CommandExpression {
         /** センサ一覧を返す */
         GET_SENSLIST    (rb.getString("ct.GET_SENSLIST.regex"), "device") {
             @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
-                if (args.length == 0 || !(args[0] instanceof Identification)) {
-                    throw new IllegalArgumentException();
-                }
-
-                Identification id = (Identification)args[0];
+                Identification id = getIdentification(args);
 
                 Device d = id.getDevice();
                 Iterable<Sensor> sensors = null;
@@ -146,7 +130,36 @@ public class CommandExpression {
                 if (sb.length() > 0) {
                     sb.setLength(sb.length()-2);
                 } else {
-                    sb.append(rb.getString("ct.GET_SENSLIST.message"));
+                    sb.append(rb.getString("ct.GET_SENSLIST.errorMes"));
+                }
+
+                medium.send(log, log.getUser(), sb.toString());
+            }
+        },
+        /** センサ値を返す */
+        GET_SENSVALUE   (rb.getString("ct.GET_SENSVALUE.regex"), "sensor") {
+            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+                Identification id = getIdentification(args);
+
+                List<Sensor> sensors = id.getSensors();
+                StringBuilder sb = new StringBuilder();
+                if (sensors == null || sensors.size() == 0) {
+                    sb.append(rb.getString("ct.GET_SENSVALUE.errorMes"));
+                } else {
+                    for (Sensor s : sensors) {
+                        try {
+                            Object o = s.getValue();
+                            sb.append(s.getSensorType().getName()).append(": ").append(o)
+                                    .append(" ").append(s.getSensorType().getUnit()).append(", ");
+                        } catch (UPnPException ex) {
+                            LOG.log(Level.INFO, "Getting UPnP device variable failed", ex);
+                        }
+                    }
+                    if (sb.length() > 0) {
+                        sb.setLength(sb.length()-2);
+                    } else {
+                        sb.append(rb.getString("ct.GET_SENSVALUE.upnpErrMes"));
+                    }
                 }
 
                 medium.send(log, log.getUser(), sb.toString());
@@ -164,6 +177,19 @@ public class CommandExpression {
         private CommandType(final String regex, final String... argNames) {
             this.regex = Pattern.compile(regex);
             this.argNames = argNames;
+        }
+
+        /**
+         * 1番目の引数からIdentificationクラスを取得．ない場合は例外を投げる
+         * @param args
+         * @return
+         */
+        private static Identification getIdentification(Object[] args) {
+            if (args.length == 0 || !(args[0] instanceof Identification)) {
+                throw new IllegalArgumentException("Identification is not found");
+            }
+
+            return (Identification)args[0];
         }
 
         /**

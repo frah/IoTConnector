@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.hibernate.Session;
-import org.itolab.morihit.clinkx.UPnPControlPoint;
-import org.itolab.morihit.clinkx.UPnPDeviceChangeListener;
-import org.itolab.morihit.clinkx.UPnPRemoteDevice;
-import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
+import org.itolab.morihit.clinkx.*;
 
 /**
  * UPnPデバイスを管理するクラス
@@ -97,6 +94,13 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
         s.close();
 
         availableDevices.put(upprd.getUDN(), upprd);
+
+        // Subscribe all variable
+        for (UPnPRemoteService upprs : upprd.getRemoteServiceList()) {
+            for (UPnPRemoteStateVariable upprsv : upprs.getRemoteStateVariableList()) {
+                upprsv.subscribe();
+            }
+        }
     }
 
     /**
