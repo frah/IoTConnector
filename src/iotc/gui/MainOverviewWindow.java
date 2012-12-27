@@ -29,7 +29,6 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventListener, DBEventListener {
     private Device currentView;
     private Device lastRightClicked;
-    private ArrayList<UPnPRemoteStateVariable> curSubscribe;
 
     private static final Logger LOG;
     static {
@@ -52,7 +51,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             // If Nimbus is not available, you can set the GUI to another look and feel.
         }// </editor-fold>
 
-        curSubscribe = new ArrayList();
         initComponents();
         DBEventListenerManager.getInstance().addListener(this, "Room|Device");
     }
@@ -498,7 +496,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
     /**
      * デバイスの詳細テーブル（コマンド，センサ）を更新する
-     * @param evt
+     * @param device
      */
     private void updateTable(Device device) {
         currentView = device;
@@ -510,10 +508,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
         removeAllRow(ctm);
         removeAllRow(vtm);
-        for (java.util.Iterator<UPnPRemoteStateVariable> i = curSubscribe.iterator(); i.hasNext();) {
-            i.next().unsubscribe();
-            i.remove();
-        }
         for (Command c : (Set<Command>)d.getCommands()) {
             ctm.addRow(new Object[]{
                 c.getId(),
@@ -525,21 +519,11 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             });
         }
         for (Sensor sens : (Set<Sensor>)d.getSensors()) {
-            try {
-                UPnPRemoteStateVariable upprsv = EntityMapUtil.dbToUPnP(sens);
-                if (!upprsv.subscribe()) {
-                    LOG.log(Level.WARNING, "Failed to subscribe UPnPRemoteStateVariable '{0}'", upprsv.getName());
-                    continue;
-                }
-                curSubscribe.add(upprsv);
-                vtm.addRow(new Object[]{
-                    sens.getId(),
-                    sens.getName(),
-                    0.0
-                });
-            } catch (UPnPException ex) {
-                LOG.log(Level.WARNING, "Sensor add failed", ex);
-            }
+            vtm.addRow(new Object[]{
+                sens.getId(),
+                sens.getName(),
+                0.0
+            });
         }
 
         s.close();

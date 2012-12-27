@@ -1,11 +1,20 @@
 package iotc;
 
+import iotc.common.UPnPException;
 import iotc.db.Device;
+import iotc.db.EntityMapUtil;
 import iotc.db.HibernateUtil;
+import iotc.db.Sensor;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
 import iotc.event.UPnPEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.hibernate.Session;
 import org.itolab.morihit.clinkx.*;
 
@@ -13,14 +22,16 @@ import org.itolab.morihit.clinkx.*;
  * UPnPデバイスを管理するクラス
  * @author atsushi-o
  */
-public class UPnPDevices implements UPnPDeviceChangeListener {
+public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
     /* UPnP */
     private final UPnPControlPoint controlPoint;
     private HashMap<String, UPnPRemoteDevice> availableDevices;
     private ArrayList<UPnPEventListener> listeners;
 
+    private static final Logger LOG;
     private static final UPnPDevices instance;
     static {
+        LOG = Logger.getLogger(UPnPDevices.class.getName());
         instance = new UPnPDevices();
     }
 
@@ -34,6 +45,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     private UPnPDevices() {
         availableDevices = new HashMap();
         listeners = new ArrayList();
+        DBEventListenerManager.getInstance().addListener(this, "Sensor");
 
         /* UPnP購読スレッドを開始 */
         controlPoint = new UPnPControlPoint();
@@ -91,16 +103,17 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
                 l.onDetectNewDevice(upprd);
             }
         }
-        s.close();
 
         availableDevices.put(upprd.getUDN(), upprd);
 
-        // Subscribe all variable
-        for (UPnPRemoteService upprs : upprd.getRemoteServiceList()) {
-            for (UPnPRemoteStateVariable upprsv : upprs.getRemoteStateVariableList()) {
-                upprsv.subscribe();
+        // Subscribe all variable of device
+        if (d != null) {
+            for (Sensor sens : (Set<Sensor>)d.getSensors()) {
+                subscribe(sens);
             }
         }
+
+        s.close();
     }
 
     /**
@@ -132,6 +145,39 @@ public class UPnPDevices implements UPnPDeviceChangeListener {
     public void deviceStateChanged(UPnPRemoteStateVariable upprsv) {
         for (UPnPEventListener l : listeners) {
             l.onUpdateValue(upprsv);
+        }
+    }
+
+    @Override public void onCreate(String entityName, Object entity) {
+        subscribe((Sensor)entity);
+    }
+
+    @Override public void onDelete(String entityName, Object entity) {
+        unsubscribe((Sensor)entity);
+    }
+
+    @Override public void onUpdate(String entityName, Object entity) {
+        subscribe((Sensor)entity);
+    }
+
+    private void subscribe(Sensor sensor) {
+        try {
+            UPnPRemoteStateVariable upprsv = EntityMapUtil.dbToUPnP((Sensor) sensor);
+            if (!upprsv.subscribe()) {
+                LOG.log(Level.INFO, "Failed to subscribe UPnPRemoteStateVariable '{0}'", upprsv.getName());
+            }
+        } catch (UPnPException ex) {
+            LOG.log(Level.WARNING, "Failed to get UPnPRemoteStateVariable '{0}'", sensor);
+        }
+    }
+    private void unsubscribe(Sensor sensor) {
+        try {
+            UPnPRemoteStateVariable upprsv = EntityMapUtil.dbToUPnP((Sensor) sensor);
+            if (!upprsv.unsubscribe()) {
+                LOG.log(Level.INFO, "Failed to unsubscribe UPnPRemoteStateVariable '{0}'", upprsv.getName());
+            }
+        } catch (UPnPException ex) {
+            LOG.log(Level.WARNING, "Failed to get UPnPRemoteStateVariable '{0}'", sensor);
         }
     }
 }
