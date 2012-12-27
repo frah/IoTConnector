@@ -14,16 +14,6 @@ public abstract class AbstractMedium implements Medium {
     private ArrayList<CommandEventListener> listeners = new ArrayList();
 
     /**
-     * ユーザにメッセージを送信する
-     * @param logId メッセージの対応するログID
-     * @param userId メッセージを送信するユーザID
-     * @param message メッセージ本文
-     * @return 送信成否
-     */
-    @Override
-    public abstract boolean Send(Log log, User user, String message);
-
-    /**
      * メッセージ受信イベントのリスナを登録
      * @param listener
      */

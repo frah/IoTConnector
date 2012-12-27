@@ -3,7 +3,6 @@ package iotc.medium;
 import iotc.db.*;
 import iotc.db.User;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,9 +43,9 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         LOG.info("Twitter stream listening stop.");
     }
 
-    /* Implementation of AbstractMedium */
+    /* Implementation of Medium */
     @Override
-    public boolean Send(Log log, User user, String message) {
+    public boolean send(Log log, User user, String message) {
         StringBuilder sb = new StringBuilder(message);
         if (user != null) {
             String scname = user.getSpecificAliasName(this.getClass().getName());
@@ -70,8 +69,14 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             t.updateStatus(st);
             LOG.log(Level.INFO, "Twitter updated: {0}", st);
         } catch (TwitterException ex) {
-            LOG.log(Level.WARNING, "Twitter send error", ex);
-            return false;
+            if (ex.getErrorCode() != 187) {
+                LOG.log(Level.WARNING, "Twitter send error", ex);
+                return false;
+            }
+
+            LOG.log(Level.FINER, ex.getErrorMessage());
+            String ctm = String.valueOf(System.currentTimeMillis());
+            return send(log, user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"));
         }
         return true;
     }

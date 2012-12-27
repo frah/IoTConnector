@@ -27,7 +27,7 @@ public class CommandOperator implements CommandEventListener {
         LOG.log(Level.INFO, "[{0}] Command received from {1} via {2}: {3}", new Object[]{log.getId(), user.getName(), sender, command});
         CommandExpression ce = new CommandExpression(command);
         if (!ce.exec(sender, log)) {
-            sender.Send(log, user, rb.getString("errorMessage"));
+            sender.send(log, user, rb.getString("errorMessage"));
         }
     }
 }

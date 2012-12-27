@@ -80,7 +80,7 @@ public class CommandExpression {
                     sb.append(rb.getString("ct.GET_COMLIST.message"));
                 }
 
-                medium.Send(log, log.getUser(), sb.toString());
+                medium.send(log, log.getUser(), sb.toString());
             }
         },
         /** 指定された部屋のデバイス一覧を返す */
@@ -99,7 +99,7 @@ public class CommandExpression {
                 }
                 sb.setLength(sb.length()-2);
 
-                medium.Send(log, log.getUser(), sb.toString());
+                medium.send(log, log.getUser(), sb.toString());
             }
         },
         /** 部屋一覧を返す */
@@ -112,7 +112,7 @@ public class CommandExpression {
                 }
                 sb.setLength(sb.length() - 2);
 
-                medium.Send(log, log.getUser(), sb.toString());
+                medium.send(log, log.getUser(), sb.toString());
             }
         },
         /** センサ一覧を返す */
@@ -149,13 +149,13 @@ public class CommandExpression {
                     sb.append(rb.getString("ct.GET_SENSLIST.message"));
                 }
 
-                medium.Send(log, log.getUser(), sb.toString());
+                medium.send(log, log.getUser(), sb.toString());
             }
         },
         /** 未定義コマンド */
         UNKNOWN         ("") {
             @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
-                medium.Send(log, log.getUser(), rb.getString("ct.UNKNOWN.message"));
+                medium.send(log, log.getUser(), rb.getString("ct.UNKNOWN.message"));
             }
         };
 
