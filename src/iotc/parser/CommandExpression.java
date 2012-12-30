@@ -103,6 +103,24 @@ public class CommandExpression {
                 medium.send(log, log.getUser(), sb.toString());
             }
         },
+        /** 任意のユーザの権限を昇格する */
+        SET_POWER       (rb.getString("ct.SET_POWER.regex"), "user", "power", "option") {
+            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+                // TODO: Implement this
+            }
+        },
+        /** 任意のユーザにデバイス・コマンドの操作許可を出す */
+        SET_POWER_DEVICE    (rb.getString("ct.SET_POWER_DEVICE.regex"), "user", "device", "option") {
+            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+                // TODO: Implement this
+            }
+        },
+        /** 別名を設定 */
+        SET_ALIAS       (rb.getString("ct.SET_ALIAS.regex"), "alias", "device", "command") {
+            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+                // TODO: Implement this
+            }
+        },
         /** センサ一覧を返す */
         GET_SENSLIST    (rb.getString("ct.GET_SENSLIST.regex"), "device") {
             @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
@@ -144,7 +162,7 @@ public class CommandExpression {
                 List<Sensor> sensors = id.getSensors();
                 StringBuilder sb = new StringBuilder();
                 if (sensors == null || sensors.size() == 0) {
-                    sb.append(rb.getString("ct.GET_SENSVALUE.errorMes"));
+                    sb.append(rb.getString("ct.error.sensor"));
                 } else {
                     for (Sensor s : sensors) {
                         try {
@@ -163,6 +181,18 @@ public class CommandExpression {
                 }
 
                 medium.send(log, log.getUser(), sb.toString());
+            }
+        },
+        /** 条件を満たした時にコマンドを実行する */
+        TERM_COMMAND    (rb.getString("ct.TERM_COMMAND.regex"), "term", "device", "command") {
+            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+                //TODO: Implement this
+            }
+        },
+        /** 条件を満たした時に通知する */
+        TERM_NOTIFY     (rb.getString("ct.TERM_NOTIFY.regex"), "term") {
+            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+                //TODO: Implement this
             }
         },
         /** 未定義コマンド */
