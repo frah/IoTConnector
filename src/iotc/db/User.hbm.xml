@@ -37,4 +37,9 @@
         from iotc.db.User as user where user.aliasName like :alias
         ]]>
     </query>
+    <query name="User.findFromNameAndAlias">
+        <![CDATA[
+        from iotc.db.User as user where user.name == :name or user.aliasName like :alias
+        ]]>
+    </query>
 </hibernate-mapping>

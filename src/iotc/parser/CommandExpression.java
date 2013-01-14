@@ -10,6 +10,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.itolab.morihit.clinkx.UPnPRemoteAction;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,13 +39,14 @@ public class CommandExpression {
     static enum CommandType {
         /** UPnPコマンドを実行する */
         EXEC_COMMAND    (rb.getString("ct.EXEC_COMMAND.regex"), "device", "command") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
                 Command c = id.getCommand();
                 User u = log.getUser();
 
                 if (c.getPower() > u.getPowerForUserId().getPower()) {
-                    throw new UPnPException("Low power");
+                    medium.send(log, log.getUser(), rb.getString("ct.error.power"));
+                    return;
                 }
 
                 UPnPRemoteAction uppra = EntityMapUtil.dbToUPnP(c);
@@ -55,7 +57,7 @@ public class CommandExpression {
         },
         /** 指定されたデバイスのコマンド一覧を返す */
         GET_COMLIST     (rb.getString("ct.GET_COMLIST.regex"), "device") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
                 User u = log.getUser();
 
@@ -77,7 +79,7 @@ public class CommandExpression {
         },
         /** 指定された部屋のデバイス一覧を返す */
         GET_DEVLIST     (rb.getString("ct.GET_DEVLIST.regex"), "room") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
 
                 Room r = (Room)session.load(Room.class, id.getRoom().getId());
@@ -92,7 +94,7 @@ public class CommandExpression {
         },
         /** 部屋一覧を返す */
         GET_ROOMLIST    (rb.getString("ct.GET_ROOMLIST.regex")) {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 List<Room> l = session.getNamedQuery("Room.findAll").list();
                 StringBuilder sb = new StringBuilder();
                 for (Room r : l) {
@@ -105,25 +107,47 @@ public class CommandExpression {
         },
         /** 任意のユーザの権限を昇格する */
         SET_POWER       (rb.getString("ct.SET_POWER.regex"), "user", "power", "option") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
+                if (log.getUser().getPowerForUserId().getPower() != PowerEnum.ADMINISTRATOR.getId()) {
+                    medium.send(log, log.getUser(), rb.getString("ct.error.power"));
+                    return;
+                }
+
+                User u = getUser((String)args.get("user"), session);
+                PowerEnum p = PowerEnum.valueOf((Integer)args.get("power"));
+                if (p == null) {
+                    medium.send(log, log.getUser(), rb.getString("ct.SET_POWER.noPower"));
+                    return;
+                }
+
+                Power pow = u.getPowerForUserId();
+                pow.setPrevPower(pow.getPower());
+                pow.setPower(p.getId());
+                session.update(pow);
+
+                medium.send(log, log.getUser(), MessageFormat.format(rb.getString("ct.SET_POWER.success"), u.getName(), p.name()));
             }
         },
         /** 任意のユーザにデバイス・コマンドの操作許可を出す */
         SET_POWER_DEVICE    (rb.getString("ct.SET_POWER_DEVICE.regex"), "user", "device", "option") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
+                if (log.getUser().getPowerForUserId().getPower() < PowerEnum.OWNER.getId()) {
+                    medium.send(log, log.getUser(), rb.getString("ct.error.power"));
+                    return;
+                }
             }
         },
         /** 別名を設定 */
         SET_ALIAS       (rb.getString("ct.SET_ALIAS.regex"), "alias", "device", "command") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
             }
         },
         /** センサ一覧を返す */
         GET_SENSLIST    (rb.getString("ct.GET_SENSLIST.regex"), "device") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
 
                 Device d = id.getDevice();
@@ -156,7 +180,7 @@ public class CommandExpression {
         },
         /** センサ値を返す */
         GET_SENSVALUE   (rb.getString("ct.GET_SENSVALUE.regex"), "sensor") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
 
                 List<Sensor> sensors = id.getSensors();
@@ -185,19 +209,19 @@ public class CommandExpression {
         },
         /** 条件を満たした時にコマンドを実行する */
         TERM_COMMAND    (rb.getString("ct.TERM_COMMAND.regex"), "term", "device", "command") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 //TODO: Implement this
             }
         },
         /** 条件を満たした時に通知する */
         TERM_NOTIFY     (rb.getString("ct.TERM_NOTIFY.regex"), "term") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 //TODO: Implement this
             }
         },
         /** 未定義コマンド */
         UNKNOWN         ("") {
-            @Override protected void process(Medium medium, Log log, Session session, Object... args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 medium.send(log, log.getUser(), rb.getString("ct.UNKNOWN.message"));
             }
         };
@@ -214,12 +238,22 @@ public class CommandExpression {
          * @param args
          * @return
          */
-        private static Identification getIdentification(Object[] args) {
-            if (args.length == 0 || !(args[0] instanceof Identification)) {
+        private static Identification getIdentification(Map<String, Object> args) {
+            if (!args.containsKey("ID")) {
                 throw new IllegalArgumentException("Identification is not found");
             }
+            return (Identification)args.get("ID");
+        }
 
-            return (Identification)args[0];
+        private static User getUser(String nameOrAlias, Session session) {
+            Query q = session.getNamedQuery("User.findFromNameAndAlias");
+            q.setString("name", nameOrAlias);
+            q.setString("alias", "%"+nameOrAlias+"%");
+            List<User> us = q.list();
+            if (us.size() == 0) {
+                throw new IllegalArgumentException("This user name is unavailable");
+            }
+            return us.get(0);
         }
 
         /**
@@ -303,11 +337,17 @@ public class CommandExpression {
          *
          * @param medium
          * @param log
-         * @param args
+         * @param id
+         * @param com
          * @return
          */
-        public boolean exec(Medium medium, Log log, Object... args) {
+        public boolean exec(Medium medium, Log log, Identification id, String com) {
             LogState ls = LogState.ERROR;
+
+            HashMap<String, Object> args = new HashMap();
+            args.put("ID", id);
+            args.putAll(getArgs(com));
+
             Session s = HibernateUtil.getSessionFactory().openSession();
             Transaction t = s.beginTransaction();
             try {
@@ -334,7 +374,7 @@ public class CommandExpression {
          * @param args
          * @throws Exception
          */
-        protected abstract void process(Medium medium, Log log, Session session, Object... args) throws Exception;
+        protected abstract void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception;
 
         /**
          * 与えられた文字列にマッチするコマンドを返す．なければnull
@@ -397,6 +437,6 @@ public class CommandExpression {
     }
 
     public boolean exec(Medium medium, Log log) {
-        return this.type.exec(medium, log, id);
+        return this.type.exec(medium, log, id, commandStr);
     }
 }

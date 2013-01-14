@@ -34,6 +34,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
     public NewIRCommandDialog(java.awt.Frame parent, boolean modal, Device d) {
         super(parent, modal);
         initComponents();
+        this.setTitle("New IR Command - IoTConnector");
 
         if (d != null) {
             for (int i = 0; i < roomCombo.getItemCount(); i++) {
