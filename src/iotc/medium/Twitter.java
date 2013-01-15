@@ -45,7 +45,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
 
     /* Implementation of Medium */
     @Override
-    public boolean send(Log log, User user, String message) {
+    protected String _send(Log log, User user, String message) {
         StringBuilder sb = new StringBuilder(message);
         if (user != null) {
             String scname = user.getSpecificAliasName(this.getClass().getName());
@@ -65,20 +65,22 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
                 st.setInReplyToStatusId(twId);
             }
         }
+        Status s = null;
         try {
-            t.updateStatus(st);
+            s = t.updateStatus(st);
             LOG.log(Level.INFO, "Twitter updated: {0}", st);
+
         } catch (TwitterException ex) {
             if (ex.getErrorCode() != 187) {
                 LOG.log(Level.WARNING, "Twitter send error", ex);
-                return false;
+                return null;
             }
 
             LOG.log(Level.FINER, ex.getErrorMessage());
             String ctm = String.valueOf(System.currentTimeMillis());
-            return send(log, user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"));
+            return _send(log, user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"));
         }
-        return true;
+        return s!=null?Long.toString(s.getId()):null;
     }
 
     /* Implementation of UserStreamListener */
@@ -110,7 +112,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             u.setName(status.getUser().getScreenName());
             u.setAliasName(this.getClass().getName()+":"+status.getUser().getScreenName());
             Power p = new Power();
-            p.setPower(0);
+            p.setPower(PowerEnum.ANONYMOUS.getId());
             p.setType(PowerType.BASIC.getId());
 
             Transaction t = s.beginTransaction();
