@@ -1,7 +1,7 @@
 package iotc;
 
 import iotc.gui.MainOverviewWindow;
-import iotc.medium.Medium;
+import iotc.medium.SMediumMap;
 import iotc.medium.Twitter;
 import iotc.test.DummySunSPOTDevice;
 import iotc.test.DummyUPnPDevice;
@@ -18,7 +18,6 @@ public class IoTConnector {
     private boolean debug;
     private UPnPDevices upnp;
     private CommandOperator operator;
-    private ArrayList<Medium> mediums;
 
     private MainOverviewWindow ovw;
 
@@ -64,11 +63,9 @@ public class IoTConnector {
         upnp.addListener(ovw);
 
         operator = new CommandOperator();
-        mediums = new ArrayList();
-        mediums.add(new Twitter());
-        for (Medium m : mediums) {
-            m.addListener(operator);
-        }
+
+        SMediumMap.put(new Twitter());
+        SMediumMap.addListenerForAll(operator);
 
         if (debug) {
             LOG.info("Start with DEBUG MODE");

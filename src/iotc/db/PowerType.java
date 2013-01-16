@@ -6,13 +6,13 @@ package iotc.db;
  */
 public enum PowerType {
     /** 機能制限のないユーザ */
-    BASIC (0),
+    BASIC (0x000),
     /** 制限時間のあるユーザ */
-    DATE_LIMITED (1),
+    DATE_LIMITED (0x001),
     /** 回数制限のあるユーザ */
-    COUNT_LIMITED (2),
+    COUNT_LIMITED (0x010),
     /** 機能制限のあるユーザ */
-    COMMAND_LIMITED (3);
+    COMMAND_LIMITED (0x100);
 
     private final int id;
     private PowerType(final int id) {
