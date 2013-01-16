@@ -18,6 +18,7 @@ public class IoTConnector {
     private boolean debug;
     private UPnPDevices upnp;
     private CommandOperator operator;
+    private VariableChecker valChk;
 
     private MainOverviewWindow ovw;
 
@@ -60,7 +61,8 @@ public class IoTConnector {
         upnp = UPnPDevices.getInstance();
         ovw = new MainOverviewWindow();
         ovw.setVisible(true);
-        upnp.addListener(ovw);
+        valChk = new VariableChecker();
+        upnp.addListener(ovw, valChk);
 
         operator = new CommandOperator();
 
