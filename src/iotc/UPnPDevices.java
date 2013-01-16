@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.itolab.morihit.clinkx.*;
 
 /**
@@ -92,17 +93,9 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
      */
     @Override
     public void deviceAdded(UPnPRemoteDevice upprd) {
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction t = s.beginTransaction();
         Device d = (Device)s.getNamedQuery("Device.findFromUDN").setString("udn", upprd.getUDN()).uniqueResult();
-        if (d != null) {
-            for (UPnPEventListener l : listeners) {
-                l.onDetectKnownDevice(d);
-            }
-        } else {
-            for (UPnPEventListener l : listeners) {
-                l.onDetectNewDevice(upprd);
-            }
-        }
 
         availableDevices.put(upprd.getUDN(), upprd);
 
@@ -113,7 +106,17 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
             }
         }
 
-        s.close();
+        t.commit();
+
+        if (d != null) {
+            for (UPnPEventListener l : listeners) {
+                l.onDetectKnownDevice(d);
+            }
+        } else {
+            for (UPnPEventListener l : listeners) {
+                l.onDetectNewDevice(upprd);
+            }
+        }
     }
 
     /**
@@ -126,8 +129,10 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
     public void deviceRemoved(UPnPRemoteDevice upprd) {
         availableDevices.remove(upprd.getUDN());
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction t = s.beginTransaction();
         Device d = (Device)s.getNamedQuery("Device.findFromUDN").setString("udn", upprd.getUDN()).uniqueResult();
+        t.commit();
         if (d != null) {
             for (UPnPEventListener l : listeners) {
                 l.onFailDevice(d);
@@ -138,7 +143,6 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
                 l.onFailDevice(d);
             }
         }
-        s.close();
     }
 
     @Override

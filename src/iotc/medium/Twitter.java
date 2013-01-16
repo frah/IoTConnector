@@ -94,7 +94,8 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         /* Search user from DB
             and if user is not saved yet, create new user entity */
         User u = null;
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction t = s.beginTransaction();
         Query q = s.getNamedQuery("User.findFromAlias");
         q.setString("alias", "%"+status.getUser().getScreenName()+"%");
         List<User> candidate = (List<User>)q.list();
@@ -115,7 +116,6 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             p.setPower(PowerEnum.ANONYMOUS.getId());
             p.setType(PowerType.BASIC.getId());
 
-            Transaction t = s.beginTransaction();
             try {
                 Serializable id = s.save(u);
                 u = (User)s.load(User.class, id);
@@ -126,7 +126,6 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             } catch (HibernateException ex) {
                 t.rollback();
                 LOG.log(Level.SEVERE, "Saving new user is failed", ex);
-                s.close();
                 return;
             }
         }
@@ -155,6 +154,8 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             l.setLog(rl);
         }
 
+        t.commit();
+
         try {
             s.beginTransaction();
             s.save(l);
@@ -169,8 +170,6 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             LOG.log(Level.WARNING, "Any error occured. Event not fired.", ex);
             s.getTransaction().rollback();
         }
-
-        s.close();
     }
 
     @Override

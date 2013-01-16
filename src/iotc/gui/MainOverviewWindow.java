@@ -19,6 +19,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
@@ -289,7 +290,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         if (lastRightClicked == null) return;
 
         if (JOptionPane.showConfirmDialog(this, "Delete anyway?", "IoTConnector", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) return;
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
         s.beginTransaction();
         try {
             s.delete(lastRightClicked);
@@ -298,8 +299,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
         } catch (org.hibernate.HibernateException ex) {
             s.getTransaction().rollback();
             JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            s.close();
         }
     }//GEN-LAST:event_dDelMenuItemActionPerformed
 
@@ -320,7 +319,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             if (ncd.isCancelled() || c == null) break;
             c.setDevice(lastRightClicked);
 
-            Session s = HibernateUtil.getSessionFactory().openSession();
+            Session s = HibernateUtil.getSessionFactory().getCurrentSession();
             s.beginTransaction();
             try {
                 s.save(c);
@@ -329,8 +328,6 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             } catch (org.hibernate.HibernateException ex) {
                 s.getTransaction().rollback();
                 JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
-            } finally {
-                s.close();
             }
         }
         ncd.dispose();
@@ -474,7 +471,8 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
             root.removeAllChildren();
 
-            Session s = HibernateUtil.getSessionFactory().openSession();
+            Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+            Transaction t = s.beginTransaction();
             Query q = s.getNamedQuery("Room.findAll");
             for (Room r : (java.util.List<Room>)q.list()) {
                 DefaultMutableTreeNode node = new ToolTipTreeNode(r);
@@ -484,7 +482,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
 
                 root.add(node);
             }
-            s.close();
+            t.commit();
 
             model.reload();
 
@@ -500,7 +498,8 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
      */
     private void updateTable(Device device) {
         currentView = device;
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
         Device d = (Device)s.load(Device.class, device.getId());
 
         DefaultTableModel ctm = (DefaultTableModel)comTable.getModel();
@@ -525,8 +524,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
                 0.0
             });
         }
-
-        s.close();
+        s.getTransaction().commit();
     }
 
     /**

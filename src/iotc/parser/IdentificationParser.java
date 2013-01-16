@@ -27,11 +27,13 @@ public final class IdentificationParser {
     public static Identification parse(String idstring) {
         Identification id = new Identification();
         Matcher m = IDPATTERN.matcher(idstring);
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
         Room r = null;
         Device d = null;
 
         if (!m.matches()) return id;
+
+        s.beginTransaction();
 
         for (int i = 1; i <= m.groupCount(); i++) {
             String str = m.group(i);
@@ -102,7 +104,8 @@ public final class IdentificationParser {
                 }
             }
         }
-        s.close();
+
+        s.getTransaction().commit();
 
         return id;
     }
@@ -117,8 +120,9 @@ public final class IdentificationParser {
         Device d = id.getDevice();
         if (d == null) return id;
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
         try {
+            s.beginTransaction();
             d = (Device)s.load(Device.class, d.getId());
             for (Command c : (Set<Command>)d.getCommands()) {
                 if (c.getName().equals(command) || c.getAliasName().equals(command)) {
@@ -126,10 +130,9 @@ public final class IdentificationParser {
                     break;
                 }
             }
+            s.getTransaction().commit();
         } catch (HibernateException ex) {
             LOG.log(Level.WARNING, "Getting command list failed", ex);
-        } finally {
-            s.close();
         }
 
         return id;
