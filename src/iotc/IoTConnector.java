@@ -1,8 +1,13 @@
 package iotc;
 
+import iotc.db.HibernateUtil;
 import iotc.gui.MainOverviewWindow;
+import iotc.medium.SMediumMap;
+import iotc.medium.Twitter;
 import iotc.test.DummySunSPOTDevice;
 import iotc.test.DummyUPnPDevice;
+import org.hibernate.Session;
+
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -15,9 +20,17 @@ import java.util.logging.Logger;
 public class IoTConnector {
     private boolean debug;
     private UPnPDevices upnp;
+    private CommandOperator operator;
+    private VariableChecker valChk;
+    private Session masterSession;
+
     private MainOverviewWindow ovw;
+
+    /** Variables for DEBUG */
     private ArrayList<DummyUPnPDevice> dummy;
     private DummySunSPOTDevice dsun;
+    /** Variables for DEBUG END */
+
     private static final String DEFAULT_LOGGING_PROPERTIES;
     private static final String DEBUG_LOGGING_PROPERTIES;
     private static final Logger LOG;
@@ -51,10 +64,17 @@ public class IoTConnector {
             }
         }// </editor-fold>
 
+        masterSession = HibernateUtil.getSessionFactory().openSession();
         upnp = UPnPDevices.getInstance();
         ovw = new MainOverviewWindow();
         ovw.setVisible(true);
-        upnp.addListener(ovw);
+        valChk = new VariableChecker();
+        upnp.addListener(ovw, valChk);
+
+        operator = new CommandOperator();
+
+        SMediumMap.put(new Twitter());
+        SMediumMap.addListenerForAll(operator);
 
         if (debug) {
             LOG.info("Start with DEBUG MODE");
@@ -78,6 +98,7 @@ public class IoTConnector {
                     dsun.stop();
                 }
                 upnp.stop();
+                masterSession.close();
             }
         });
     }

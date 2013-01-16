@@ -1,6 +1,8 @@
 package iotc.gui;
 
 import iotc.db.*;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -23,7 +25,7 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
  * 新しいデバイスを追加するためのダイアログ
  * @author atsushi-o
  */
-public class NewDeviceDialog extends javax.swing.JDialog {
+public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListener {
     private UPnPRemoteDevice upprd;
 
     /**
@@ -34,6 +36,7 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         this.upprd = device;
         initComponents();
         updateTable();
+        DBEventListenerManager.getInstance().addListener(this, "Room|SensorType");
     }
 
     /**
@@ -240,7 +243,6 @@ public class NewDeviceDialog extends javax.swing.JDialog {
     private void addRoomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRoomButtonActionPerformed
         NewRoomDialog nr = new NewRoomDialog((javax.swing.JFrame)this.getParent(), true);
         nr.setVisible(true);
-        updateRoomList();
     }//GEN-LAST:event_addRoomButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -261,15 +263,18 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         UPnPActionTableModel actionModel = (UPnPActionTableModel)comTable.getModel();
         UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
 
         if (device.getType() != DeviceType.NonUPnP.getId()) {
+            s.beginTransaction();
             Query q = s.getNamedQuery("Device.findFromUDN");
             q.setString("udn", device.getUdn());
             if (q.uniqueResult() != null) {
+                s.getTransaction().commit();
                 JOptionPane.showMessageDialog(this, "This device is already added", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            s.getTransaction().commit();
         }
         Transaction t = s.beginTransaction();
         try {
@@ -296,8 +301,6 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         } catch (HibernateException ex) {
             t.rollback();
             JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            s.close();
         }
 
         if (isSuccess) {
@@ -333,15 +336,15 @@ public class NewDeviceDialog extends javax.swing.JDialog {
      * 部屋一覧を更新する
      */
     private void updateRoomList() {
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
         Query q = s.getNamedQuery("Room.findAll");
 
         roomCombo.removeAllItems();;
         for (Room r : (List<Room>)q.list()) {
             roomCombo.addItem(r);
         }
-
-        s.close();
+        s.getTransaction().commit();
     }
 
     // <editor-fold defaultstate="collapsed" desc="Table functions">
@@ -357,13 +360,14 @@ public class NewDeviceDialog extends javax.swing.JDialog {
             combo.removeActionListener(al);
         }
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
         Query q = s.getNamedQuery("SensorType.findAll");
         for (SensorType st : (List<SensorType>)q.list()) {
             combo.addItem(st);
         }
-        s.close();
         combo.addItem("Add new type...");
+        s.getTransaction().commit();
 
         for (ActionListener al : als) {
             combo.addActionListener(al);
@@ -379,7 +383,6 @@ public class NewDeviceDialog extends javax.swing.JDialog {
         if (c.getSelectedIndex() == c.getItemCount()-1) {
             NewSensorTypeDialog nstd = new NewSensorTypeDialog((javax.swing.JFrame)this.getParent(), true);
             nstd.setVisible(true);
-            updateSensorTypeCombo();
             if (c.getItemCount() > 1) c.setSelectedIndex(0);
         }
     }
@@ -420,4 +423,46 @@ public class NewDeviceDialog extends javax.swing.JDialog {
     private javax.swing.JTextField udnField;
     private javax.swing.JTable varTable;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onCreate(String entityName, Object entity) {
+        switch (entityName) {
+            case "Room":
+                updateRoomList();
+                break;
+            case "SensorType":
+                updateSensorTypeCombo();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onDelete(String entityName, Object entity) {
+        switch (entityName) {
+            case "Room":
+                updateRoomList();
+                break;
+            case "SensorType":
+                updateSensorTypeCombo();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onUpdate(String entityName, Object entity) {
+        switch (entityName) {
+            case "Room":
+                updateRoomList();
+                break;
+            case "SensorType":
+                updateSensorTypeCombo();
+                break;
+            default:
+                break;
+        }
+    }
 }

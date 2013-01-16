@@ -116,7 +116,7 @@ public class NewRoomDialog extends javax.swing.JDialog {
             Room r = new Room(nameField.getText());
             r.setExplanation(explanationTextArea.getText());
 
-            Session s = HibernateUtil.getSessionFactory().openSession();
+            Session s = HibernateUtil.getSessionFactory().getCurrentSession();
             Transaction t = s.beginTransaction();
 
             try {
@@ -126,8 +126,6 @@ public class NewRoomDialog extends javax.swing.JDialog {
             } catch (HibernateException e) {
                 JOptionPane.showMessageDialog(this, e.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
                 t.rollback();
-            } finally {
-                s.close();
             }
 
             if (success) {

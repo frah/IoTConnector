@@ -1,24 +1,59 @@
 package iotc.medium;
 
-import java.util.Arrays;
-import java.util.ArrayList;
+import iotc.db.HibernateUtil;
+import iotc.db.Log;
+import iotc.db.LogState;
+import iotc.db.User;
 import iotc.event.CommandEventListener;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * 通信媒体の抽象クラス
  * @author atsushi-o
  */
-public abstract class AbstractMedium {
+public abstract class AbstractMedium implements Medium {
     private ArrayList<CommandEventListener> listeners = new ArrayList();
 
     /**
-     * ユーザにメッセージを送信する
-     * @param logId メッセージの対応するログID
-     * @param userId メッセージを送信するユーザID
+     * メッセージ送信の内部処理
+     * @param log メッセージ送信元のログ
+     * @param user メッセージ送信ユーザ
      * @param message メッセージ本文
-     * @return 送信成否
+     * @return 送信したメッセージのID
      */
-    public abstract boolean Send(int logId, int userId, String message);
+    protected abstract String _send(Log log, User user, String message);
+    @Override
+    public final boolean send(Log log, User user, String message) {
+        String mediumID = _send(log, user, message);
+
+        Log newLog = new Log();
+        log.setState(mediumID!=null?LogState.COMPLETE.getId():LogState.ERROR.getId());
+        log.setMediumId(mediumID);
+        log.setLog(log);
+        log.setUser(user);
+        log.setComVariable(message);
+
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
+        s.save(newLog);
+        s.getTransaction().commit();
+
+        return mediumID != null;
+    }
+
+    /**
+     * メッセージ受信イベントのリスナを登録
+     * @param listener
+     */
+    @Override
+    public final void addListener(CommandEventListener listener) {
+        listeners.add(listener);
+    }
 
     /**
      * メッセージ受信イベントのリスナを登録
@@ -31,16 +66,17 @@ public abstract class AbstractMedium {
      * メッセージ受信イベントのリスナの登録解除
      * @param listener
      */
-    public void removeListener(CommandEventListener listener) {
+    @Override
+    public final void removeListener(CommandEventListener listener) {
         listeners.remove(listener);
     }
     /**
      * リスナにコマンド受信通知を送る
-     * @see iotc.event.CommandEventListener#onReceiveCommand(int, java.lang.String, int) 
+     * @see iotc.event.CommandEventListener#onReceiveCommand(Medium sender, User user, String command, Log log)
      */
-    protected void fireReceiveEvent(int userId, String command, int replyId) {
+    protected void fireReceiveEvent(User user, String command, Log reply) {
         for (CommandEventListener l : listeners) {
-            l.onReceiveCommand(userId, command, replyId);
+            l.onReceiveCommand(this, user, command, reply);
         }
     }
 }

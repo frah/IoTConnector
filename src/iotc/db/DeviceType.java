@@ -23,7 +23,8 @@ public enum DeviceType {
         return type_id;
     }
 
-    public static DeviceType valueOf(int id) {
+    public static DeviceType valueOf(Integer id) {
+        if (id == null) return null;
         for (DeviceType d : values()) {
             if (d.type_id == id) return d;
         }

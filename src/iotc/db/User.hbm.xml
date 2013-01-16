@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!DOCTYPE hibernate-mapping SYSTEM "classpath://org/hibernate/hibernate-mapping-3.0.dtd">
 <!-- Generated 2012/12/11 18:19:45 by Hibernate Tools 3.2.1.GA -->
 <hibernate-mapping>
     <class name="iotc.db.User" table="user" catalog="iotc">
@@ -26,11 +25,21 @@
             </key>
             <one-to-many class="iotc.db.Power" />
         </set>
-        <set name="powersForUserId" inverse="true">
-            <key>
-                <column name="user_id" not-null="true" unique="true" />
-            </key>
-            <one-to-many class="iotc.db.Power" />
-        </set>
+        <one-to-one name="powerForUserId" class="iotc.db.Power" property-ref="userByUserId" cascade="all" fetch="join" outer-join="true" />
     </class>
+    <query name="User.findAll">
+        <![CDATA[
+        from iotc.db.User
+        ]]>
+    </query>
+    <query name="User.findFromAlias">
+        <![CDATA[
+        from iotc.db.User as user where user.aliasName like :alias
+        ]]>
+    </query>
+    <query name="User.findFromNameAndAlias">
+        <![CDATA[
+        from iotc.db.User as user where user.name = :name or user.aliasName like :alias
+        ]]>
+    </query>
 </hibernate-mapping>

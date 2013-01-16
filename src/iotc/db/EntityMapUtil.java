@@ -1,9 +1,15 @@
 package iotc.db;
 
 import iotc.UPnPDevices;
-import iotc.UPnPException;
+import iotc.common.UPnPException;
+
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.itolab.morihit.clinkx.UPnPRemoteAction;
 import org.itolab.morihit.clinkx.UPnPRemoteActionArgument;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
@@ -95,5 +101,38 @@ public class EntityMapUtil {
         }
 
         return a;
+    }
+
+    /**
+     * UPnP変数インスタンスからDBのセンサエンティティを取得する
+     * @param upprsv UPnP変数インスタンス
+     * @return 登録されているセンサエンティティ
+     * @throws UPnPException デバイス，センサの登録がない場合
+     */
+    public static Sensor upnpToDB(UPnPRemoteStateVariable upprsv) throws UPnPException {
+        UPnPRemoteDevice upprd = upprsv.getRemoteService().getRemoteDevice();
+
+        Device d;
+
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction t = s.beginTransaction();
+        Query q = s.getNamedQuery("Device.findFromUDN");
+        q.setString("udn", upprd.getUDN());
+        Object o = q.uniqueResult();
+        if (o instanceof Device) {
+            d = (Device)o;
+        } else {
+            throw new UPnPException("This is an unregistered device");
+        }
+        Set<Sensor> sensors = d.getSensors();
+        for (Sensor sens : sensors) {
+            if (sens.getName().equals(upprsv.getName())) {
+                t.commit();
+                return sens;
+            }
+        }
+
+        t.commit();
+        throw new UPnPException("This is an unregistered sensor");
     }
 }

@@ -1,11 +1,13 @@
 package iotc.db;
 
 /**
- *
+ * コマンドのタイプ
  * @author atsushi-o
  */
 public enum CommandType {
+    /** SunSPOTを介した赤外線制御コマンド */
     SunSPOT     (1, "SunSPOT InfraRed"),
+    /** それ以外のUPnPコマンド */
     UPnPAction  (2, "UPnP Action");
 
     private final int id;

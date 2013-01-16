@@ -2,12 +2,16 @@ package iotc.gui;
 
 import iotc.UPnPDevices;
 import iotc.db.*;
+import iotc.event.DBEventListener;
+import iotc.event.DBEventListenerManager;
+import iotc.event.UPnPEventListener;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.hibernate.CacheMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -20,7 +24,7 @@ import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
  * 新しいSunSPOTを介した制御コマンドを登録するためのダイアログ
  * @author atsushi-o
  */
-public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.event.UPnPEventListener {
+public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEventListener, DBEventListener {
     private UPnPRemoteStateVariable upprsv;
     private static Logger LOG = Logger.getLogger(NewIRCommandDialog.class.getName());
 
@@ -30,6 +34,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
     public NewIRCommandDialog(java.awt.Frame parent, boolean modal, Device d) {
         super(parent, modal);
         initComponents();
+        this.setTitle("New IR Command - IoTConnector");
 
         if (d != null) {
             for (int i = 0; i < roomCombo.getItemCount(); i++) {
@@ -46,6 +51,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
             }
         }
         UPnPDevices.getInstance().addListener(this);
+        DBEventListenerManager.getInstance().addListener(this, "Room|Device");
     }
 
     /**
@@ -72,7 +78,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         aliasField = new javax.swing.JTextField();
-        powerCombo = new javax.swing.JComboBox<Integer>(new Integer[]{0, 1, 2, 3, 4, 5});
+        powerCombo = new javax.swing.JComboBox(PowerEnum.values());
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
@@ -234,15 +240,16 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateRoomCombo() {
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
+        s.setCacheMode(CacheMode.IGNORE);
         Query q = s.getNamedQuery("Room.findAll");
 
         roomCombo.removeAllItems();;
         for (Room r : (List<Room>)q.list()) {
             roomCombo.addItem(r);
         }
-
-        s.close();
+        s.getTransaction().commit();
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -254,13 +261,13 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
 
         Command c = new Command();
         c.setName(nameField.getText());
-        c.setPower(powerCombo.getItemAt(powerCombo.getSelectedIndex()));
+        c.setPower(powerCombo.getItemAt(powerCombo.getSelectedIndex()).getId());
         c.setType(CommandType.SunSPOT.getId());
         c.setDevice(deviceCombo.getItemAt(deviceCombo.getSelectedIndex()));
         c.setAliasName(aliasField.getText());
         c.setCommand("setIRCommand("+comField.getText()+")");
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
         try {
             s.beginTransaction();
             s.save(c);
@@ -269,8 +276,6 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
             s.getTransaction().rollback();
             LOG.log(Level.WARNING, "Add SunSPOT command failed", ex);
             JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            s.close();
         }
         this.dispose();
     }//GEN-LAST:event_okButtonActionPerformed
@@ -288,7 +293,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
 
     private void roomComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomComboActionPerformed
         // 部屋選択時アクション
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
         Room r = roomCombo.getItemAt(roomCombo.getSelectedIndex());
         r = (Room)s.load(Room.class, r.getId());
 
@@ -296,8 +302,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
         for (Device dev : (Set<Device>)r.getDevices()) {
             deviceCombo.addItem(dev);
         }
-        s.close();
         deviceCombo.setEnabled(true);
+        s.getTransaction().commit();
     }//GEN-LAST:event_roomComboActionPerformed
 
     private void deviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboActionPerformed
@@ -307,7 +313,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
 
     private void sendReqButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendReqButtonActionPerformed
         // IRコマンド受信リクエスト送信ボタン押下アクション
-        Session s = HibernateUtil.getSessionFactory().openSession();
+        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        s.beginTransaction();
         Room r = roomCombo.getItemAt(roomCombo.getSelectedIndex());
         r = (Room)s.load(Room.class, r.getId());
 
@@ -335,15 +342,14 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
                 this.upprsv = upprd.getRemoteStateVariable("IRCommand");
                 this.upprsv.subscribe();
             }
-        } catch (iotc.UPnPException ex) {
+        } catch (iotc.common.UPnPException ex) {
             LOG.log(Level.WARNING, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } catch (NullPointerException ex) {
             LOG.log(Level.WARNING, null, ex);
             JOptionPane.showMessageDialog(this, "Remote action invocation failed", "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        s.close();
+        s.getTransaction().commit();
     }//GEN-LAST:event_sendReqButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -362,7 +368,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField nameField;
     private javax.swing.JButton okButton;
-    private javax.swing.JComboBox<Integer> powerCombo;
+    private javax.swing.JComboBox<PowerEnum> powerCombo;
     private javax.swing.JComboBox<Room> roomCombo;
     private javax.swing.JButton sendReqButton;
     // End of variables declaration//GEN-END:variables
@@ -385,6 +391,34 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements iotc.even
             aliasField.setEnabled(true);
             okButton.setEnabled(true);
             this.upprsv.unsubscribe();
+        }
+    }
+
+    @Override
+    public void onCreate(String entityName, Object entity) {
+        updateComponent(entityName);
+    }
+
+    @Override
+    public void onDelete(String entityName, Object entity) {
+        updateComponent(entityName);
+    }
+
+    @Override
+    public void onUpdate(String entityName, Object entity) {
+        updateComponent(entityName);
+    }
+
+    private void updateComponent(String entityName) {
+        switch (entityName) {
+            case "Room":
+                updateRoomCombo();
+                break;
+            case "Device":
+                roomComboActionPerformed(null);
+                break;
+            default:
+                break;
         }
     }
 }

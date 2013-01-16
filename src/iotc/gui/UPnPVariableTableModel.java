@@ -1,17 +1,10 @@
 package iotc.gui;
 
-import iotc.db.HibernateUtil;
 import iotc.db.Sensor;
 import iotc.db.SensorType;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableModel;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 

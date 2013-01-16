@@ -199,8 +199,8 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="for (int i = 0; i &lt;= 5; i++) {&#xd;&#xa;    powerCombo.addItem(i);&#xd;&#xa;}"/>
-        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Integer&gt;"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(PowerEnum.values());"/>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;PowerEnum&gt;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="aliasTextField">
