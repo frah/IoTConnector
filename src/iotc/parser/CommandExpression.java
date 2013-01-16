@@ -44,10 +44,7 @@ public class CommandExpression {
                 Command c = id.getCommand();
                 User u = log.getUser();
 
-                if (c.getPower() > u.getPowerForUserId().getPower()) {
-                    medium.send(log, log.getUser(), rb.getString("ct.error.power"));
-                    return;
-                }
+                if (!checkPower(medium, log, PowerEnum.valueOf(c.getPower()))) return;
 
                 UPnPRemoteAction uppra = EntityMapUtil.dbToUPnP(c);
                 if (!uppra.invoke()) {
@@ -109,10 +106,7 @@ public class CommandExpression {
         SET_POWER       (rb.getString("ct.SET_POWER.regex"), "user", "power", "option") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
-                if (log.getUser().getPowerForUserId().getPower() != PowerEnum.ADMINISTRATOR.getId()) {
-                    medium.send(log, log.getUser(), rb.getString("ct.error.power"));
-                    return;
-                }
+                if (!checkPower(medium, log, PowerEnum.ADMINISTRATOR)) return;
 
                 User u = getUser((String)args.get("user"), session);
                 PowerEnum p = PowerEnum.valueOf((Integer)args.get("power"));
@@ -133,10 +127,7 @@ public class CommandExpression {
         SET_POWER_DEVICE    (rb.getString("ct.SET_POWER_DEVICE.regex"), "user", "device", "option") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
-                if (log.getUser().getPowerForUserId().getPower() < PowerEnum.OWNER.getId()) {
-                    medium.send(log, log.getUser(), rb.getString("ct.error.power"));
-                    return;
-                }
+                if (!checkPower(medium, log, PowerEnum.OWNER)) return;
             }
         },
         /** 別名を設定 */
@@ -181,6 +172,7 @@ public class CommandExpression {
         /** センサ値を返す */
         GET_SENSVALUE   (rb.getString("ct.GET_SENSVALUE.regex"), "sensor") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
+                if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
                 Identification id = getIdentification(args);
 
                 List<Sensor> sensors = id.getSensors();
@@ -211,10 +203,18 @@ public class CommandExpression {
         TERM_COMMAND    (rb.getString("ct.TERM_COMMAND.regex"), "term", "device", "command") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 //TODO: Implement this
+                if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
             }
         },
         /** 条件を満たした時に通知する */
         TERM_NOTIFY     (rb.getString("ct.TERM_NOTIFY.regex"), "term") {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
+                //TODO: Implement this
+                if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
+            }
+        },
+        /** センサ情報の購読リクエスト */
+        SUBSCRIBE_REQ   (rb.getString("ct.SUBSCRIBE_REQ.regex"), "sensor", "term", "frequency") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 //TODO: Implement this
             }
@@ -254,6 +254,14 @@ public class CommandExpression {
                 throw new IllegalArgumentException("This user name is unavailable");
             }
             return us.get(0);
+        }
+
+        private static boolean checkPower(Medium medium, Log log, PowerEnum pow) {
+            if (log.getUser().getPowerForUserId().getPower() < pow.getId()) {
+                medium.send(log, log.getUser(), rb.getString("ct.error.power"));
+                return false;
+            }
+            return true;
         }
 
         /**
