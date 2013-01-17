@@ -10,6 +10,9 @@
         <property name="term" type="string">
             <column name="term" length="65535" not-null="true" />
         </property>
+        <many-to-one name="user" class="iotc.db.User" fetch="select">
+            <column name="user_id" not-null="true" />
+        </many-to-one>
         <set name="sensors" inverse="false" table="ref_term_sensor">
             <key>
                 <column name="term" not-null="true" />

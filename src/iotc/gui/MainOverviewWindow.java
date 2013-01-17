@@ -474,6 +474,7 @@ public class MainOverviewWindow extends javax.swing.JFrame implements UPnPEventL
             Session s = HibernateUtil.getSessionFactory().getCurrentSession();
             Transaction t = s.beginTransaction();
             Query q = s.getNamedQuery("Room.findAll");
+            //FIXME: stack over flow (loop error)
             for (Room r : (java.util.List<Room>)q.list()) {
                 DefaultMutableTreeNode node = new ToolTipTreeNode(r);
                 for (Device d : (java.util.Set<Device>)r.getDevices()) {

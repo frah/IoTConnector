@@ -264,9 +264,9 @@ public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListe
         UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
 
         Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction t = s.beginTransaction();
 
         if (device.getType() != DeviceType.NonUPnP.getId()) {
-            s.beginTransaction();
             Query q = s.getNamedQuery("Device.findFromUDN");
             q.setString("udn", device.getUdn());
             if (q.uniqueResult() != null) {
@@ -274,9 +274,8 @@ public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListe
                 JOptionPane.showMessageDialog(this, "This device is already added", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            s.getTransaction().commit();
         }
-        Transaction t = s.beginTransaction();
+
         try {
             Serializable id = s.save(device);
             Device d = (Device)s.load(Device.class, id);

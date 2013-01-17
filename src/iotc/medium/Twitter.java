@@ -154,12 +154,9 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             l.setLog(rl);
         }
 
-        t.commit();
-
         try {
-            s.beginTransaction();
             s.save(l);
-            s.getTransaction().commit();
+            t.commit();
 
             synchronized (this) {
                 relations.put(status.getId(), l);
@@ -168,23 +165,20 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Any error occured. Event not fired.", ex);
-            s.getTransaction().rollback();
+            t.rollback();
         }
     }
 
     @Override
     public void onFollow(twitter4j.User user, twitter4j.User user1) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void onDirectMessage(twitter4j.DirectMessage dm) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void onException(Exception excptn) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override public void onDeletionNotice(long l, long l1) {}

@@ -32,11 +32,11 @@ public abstract class AbstractMedium implements Medium {
         String mediumID = _send(log, user, message);
 
         Log newLog = new Log();
-        log.setState(mediumID!=null?LogState.COMPLETE.getId():LogState.ERROR.getId());
-        log.setMediumId(mediumID);
-        log.setLog(log);
-        log.setUser(user);
-        log.setComVariable(message);
+        newLog.setState(mediumID!=null?LogState.COMPLETE.getId():LogState.ERROR.getId());
+        newLog.setMediumId(mediumID);
+        newLog.setLog(log);
+        newLog.setUser(user);
+        newLog.setComVariable(message);
 
         Session s = HibernateUtil.getSessionFactory().getCurrentSession();
         s.beginTransaction();

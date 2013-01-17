@@ -151,7 +151,9 @@ CREATE TABLE `statistic_value` (
 CREATE TABLE `term` (
     `id` integer unsigned NOT NULL AUTO_INCREMENT,
     `term` text NOT NULL,
-    PRIMARY KEY (`id`)
+    `user_id` integer unsigned,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES user (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 
 CREATE TABLE `ref_term_sensor` (

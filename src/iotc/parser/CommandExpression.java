@@ -214,8 +214,29 @@ public class CommandExpression {
         /** 条件を満たした時に通知する */
         TERM_NOTIFY     (rb.getString("ct.TERM_NOTIFY.regex"), "term") {
             @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
-                //TODO: Implement this
                 if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
+
+                Term t = new Term();
+                t.setTerm((String)args.get("term"));
+                t.setUser(log.getUser());
+                Set sens = t.getSensors();
+
+                //TODO: Fix here
+                Matcher m = IDPATTERN.matcher(t.getTerm());
+                while (m.find()) {
+                    LOG.info(m.group(0));
+                    Identification id = IdentificationParser.parse(m.group(0));
+                    LOG.info(id.toString());
+                    sens.add(id.getSensors().get(0));
+                }
+                t.setSensors(sens);
+
+                Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+                s.beginTransaction();
+                s.save(t);
+                s.getTransaction().commit();
+
+                medium.send(log, log.getUser(), rb.getString("ct.TERM_NOTIFY.complete"));
             }
         },
         /** センサ情報の購読リクエスト */
@@ -230,6 +251,11 @@ public class CommandExpression {
                 medium.send(log, log.getUser(), rb.getString("ct.UNKNOWN.message"));
             }
         };
+
+        private static final Pattern IDPATTERN;
+        static {
+            IDPATTERN = Pattern.compile("([^:]+)::([^:]+)::([^: <>=]+)");
+        }
 
         private final Pattern regex;
         private final String[] argNames;
@@ -360,17 +386,12 @@ public class CommandExpression {
             args.put("ID", id);
             args.putAll(getArgs(com));
 
-            Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-            Transaction t = s.beginTransaction();
             try {
-                Log l = (Log)s.load(Log.class, log.getId());
-                process(medium, l, args);
-                t.commit();
+                process(medium, log, args);
                 ls = LogState.COMPLETE;
                 return true;
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, "Command "+name()+" execution failed", ex);
-                t.rollback();
                 return false;
             } finally {
                 updateLog(log, ls);
