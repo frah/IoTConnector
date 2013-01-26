@@ -9,6 +9,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.itolab.morihit.clinkx.UPnPRemoteAction;
+import org.itolab.morihit.clinkx.UPnPRemoteActionArgument;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -50,6 +51,22 @@ public class CommandExpression {
                 if (!uppra.invoke()) {
                     throw new UPnPException("UPnPRemoteAction invocation failed");
                 }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(rb.getString("ct.EXEC_COMMAND.success"));
+                List<UPnPRemoteActionArgument> rets = uppra.getRemoteActionOutputArgumentList();
+                if (rets.size() > 0) {
+                    sb.append(" (");
+                    for (UPnPRemoteActionArgument uppraa : rets) {
+                        sb.append(uppraa.getName());
+                        sb.append(":");
+                        sb.append(uppraa.getValue());
+                        sb.append(",");
+                    }
+                    sb.setLength(sb.length()-1);
+                    sb.append(")");
+                }
+                medium.send(log, log.getUser(), sb.toString());
             }
         },
         /** 指定されたデバイスのコマンド一覧を返す */
