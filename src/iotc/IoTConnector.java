@@ -5,6 +5,8 @@ import iotc.medium.SMediumMap;
 import iotc.medium.Twitter;
 import iotc.test.DummyDeviceLauncher;
 import iotc.test.DummySunSPOTDevice;
+import iotc.test.TwitterTester;
+
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -23,6 +25,7 @@ public class IoTConnector {
 
     private DummyDeviceLauncher dummy;
     private DummySunSPOTDevice dsun;
+    private TwitterTester ttester;
 
     private static final String DEFAULT_LOGGING_PROPERTIES;
     private static final String DEBUG_LOGGING_PROPERTIES;
@@ -70,9 +73,18 @@ public class IoTConnector {
 
         if (debug) {
             LOG.info("Start with DEBUG MODE");
-            dummy = new DummyDeviceLauncher(1);
+            int deviceNum = 10;
+
+            dummy = new DummyDeviceLauncher(deviceNum);
             dsun = new DummySunSPOTDevice("SunSPOT-dummy");
             dummy.start();
+            try {
+                ttester = new TwitterTester(deviceNum);
+                operator.setExpListener(ttester);
+                ttester.start();
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, "Initialize TwitterTester failed", e);
+            }
         }
 
         // VM終了時の処理
@@ -81,6 +93,7 @@ public class IoTConnector {
             public void run() {
                 LOG.info("IoTConnector will shutdown.");
                 if (IoTConnector.this.debug) {
+                    ttester.stop();
                     dummy.stop();
                     dsun.stop();
                 }
