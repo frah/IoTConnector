@@ -41,6 +41,7 @@ public class TwitterTester implements Runnable, ExpEventListener {
 
     private static final String[] COMS;
     private static final String OUT_PATH;
+    private static final int TIME_SPAN;
     private static final Logger LOG;
 
     static {
@@ -50,6 +51,7 @@ public class TwitterTester implements Runnable, ExpEventListener {
                 "GetHumidity"
         };
         OUT_PATH = "C:\\output.csv";
+        TIME_SPAN = 60;
         LOG = Logger.getLogger(TwitterTester.class.getName());
     }
 
@@ -207,7 +209,7 @@ public class TwitterTester implements Runnable, ExpEventListener {
             }
 
             try {
-                Thread.sleep(rand.nextInt(30000));
+                Thread.sleep(rand.nextInt(TIME_SPAN)*1000);
             } catch (InterruptedException e) {}
         }
 
