@@ -290,8 +290,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
     private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
         if (evt.getValueIsAdjusting()) return;
         if (userList.getModel().getSize() == 0 || userList.isSelectionEmpty()) return;
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         User u = (User)s.load(User.class, userList.getSelectedValue().getId());
         Power p = u.getPowerForUserId();
 
@@ -307,14 +306,14 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
         User auth = p.getUserByAuthBy();
         authField.setText(auth != null?String.valueOf(auth.getId()):"");
 
-        s.getTransaction().commit();
-
         // Update field state
         changeEditable(false);
         addButton.setEnabled(true);
         editButton.setEnabled(true);
         editButton.setText("Edit");
         deleteButton.setEnabled(true);
+
+        s.close();
 
         currentMode.clear();
         currentMode.add(Mode.SELECTING);
@@ -358,16 +357,18 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
         if (!currentMode.contains(Mode.SELECTING)) return;
         if (JOptionPane.showConfirmDialog(this, "Delete anyway?", "IoTConnector", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) return;
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         try {
-            s.beginTransaction();
             User u = (User)s.load(User.class, userList.getSelectedValue().getId());
+            s.beginTransaction();
             s.delete(u);
             s.getTransaction().commit();
         } catch (HibernateException ex) {
             LOG.log(Level.WARNING, "Delete user failed", ex);
             JOptionPane.showMessageDialog(this, "User delete failed.\n" + ex.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             s.getTransaction().rollback();
+        } finally {
+            s.close();
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
 
@@ -378,8 +379,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
                 return;
             }
 
-            Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-            Transaction t = s.beginTransaction();
+            Session s = HibernateUtil.getSessionFactory().openSession();
             User u;
             Power p;
             if (currentMode.contains(Mode.SELECTING)) {
@@ -401,6 +401,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
             p.setType(typeCombo.getItemAt(typeCombo.getSelectedIndex()).getId());
             p.setPeriod(!periodField.getText().equals("")?Integer.valueOf(periodField.getText()):null);
 
+            Transaction t = s.beginTransaction();
             try {
                 if (currentMode.contains(Mode.SELECTING)) {
                     s.update(u);
@@ -416,6 +417,8 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
                 JOptionPane.showMessageDialog(this, "User update failed.\n" + ex.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 t.rollback();
                 return;
+            } finally {
+                s.close();
             }
 
             changeEditable(false);
@@ -459,8 +462,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
         return new javax.swing.JComboBox(strs);
     }
     private void loadUsers() {
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         s.setCacheMode(CacheMode.IGNORE);
         Query q = s.getNamedQuery("User.findAll");
         List<User> users = (List<User>)q.list();
@@ -471,8 +473,7 @@ public class UserWindow extends javax.swing.JFrame implements DBEventListener {
             model.addElement(u);
         }
 
-        s.getTransaction().commit();
-
+        s.close();
         userList.repaint();
     }
     private void changeEditable(boolean editable) {

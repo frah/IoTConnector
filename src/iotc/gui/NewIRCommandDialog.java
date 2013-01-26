@@ -240,8 +240,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateRoomCombo() {
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         s.setCacheMode(CacheMode.IGNORE);
         Query q = s.getNamedQuery("Room.findAll");
 
@@ -249,7 +248,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
         for (Room r : (List<Room>)q.list()) {
             roomCombo.addItem(r);
         }
-        s.getTransaction().commit();
+
+        s.close();
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -267,7 +267,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
         c.setAliasName(aliasField.getText());
         c.setCommand("setIRCommand("+comField.getText()+")");
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         try {
             s.beginTransaction();
             s.save(c);
@@ -276,6 +276,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
             s.getTransaction().rollback();
             LOG.log(Level.WARNING, "Add SunSPOT command failed", ex);
             JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            s.close();
         }
         this.dispose();
     }//GEN-LAST:event_okButtonActionPerformed
@@ -293,8 +295,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
 
     private void roomComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomComboActionPerformed
         // 部屋選択時アクション
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         Room r = roomCombo.getItemAt(roomCombo.getSelectedIndex());
         r = (Room)s.load(Room.class, r.getId());
 
@@ -302,8 +303,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
         for (Device dev : (Set<Device>)r.getDevices()) {
             deviceCombo.addItem(dev);
         }
+        s.close();
         deviceCombo.setEnabled(true);
-        s.getTransaction().commit();
     }//GEN-LAST:event_roomComboActionPerformed
 
     private void deviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboActionPerformed
@@ -313,8 +314,7 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
 
     private void sendReqButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendReqButtonActionPerformed
         // IRコマンド受信リクエスト送信ボタン押下アクション
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         Room r = roomCombo.getItemAt(roomCombo.getSelectedIndex());
         r = (Room)s.load(Room.class, r.getId());
 
@@ -349,7 +349,8 @@ public class NewIRCommandDialog extends javax.swing.JDialog implements UPnPEvent
             LOG.log(Level.WARNING, null, ex);
             JOptionPane.showMessageDialog(this, "Remote action invocation failed", "Error", JOptionPane.ERROR_MESSAGE);
         }
-        s.getTransaction().commit();
+
+        s.close();
     }//GEN-LAST:event_sendReqButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

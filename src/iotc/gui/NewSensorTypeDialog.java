@@ -116,7 +116,7 @@ public class NewSensorTypeDialog extends javax.swing.JDialog {
         st.setName(nameField.getText());
         st.setUnit(unitField.getText());
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         Transaction t = s.beginTransaction();
 
         try {
@@ -126,6 +126,8 @@ public class NewSensorTypeDialog extends javax.swing.JDialog {
         } catch (HibernateException ex) {
             t.rollback();
             JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            s.close();
         }
 
         if (success) this.dispose();
