@@ -3,9 +3,8 @@ package iotc;
 import iotc.gui.MainOverviewWindow;
 import iotc.medium.SMediumMap;
 import iotc.medium.Twitter;
+import iotc.test.DummyDeviceLauncher;
 import iotc.test.DummySunSPOTDevice;
-import iotc.test.DummyUPnPDevice;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -22,7 +21,7 @@ public class IoTConnector {
 
     private MainOverviewWindow ovw;
 
-    private ArrayList<DummyUPnPDevice> dummy;
+    private DummyDeviceLauncher dummy;
     private DummySunSPOTDevice dsun;
 
     private static final String DEFAULT_LOGGING_PROPERTIES;
@@ -71,12 +70,9 @@ public class IoTConnector {
 
         if (debug) {
             LOG.info("Start with DEBUG MODE");
-            dummy = new ArrayList();
-            dummy.add(new DummyUPnPDevice("Dummy-c0d2c761-777a-43bb-be25-7e9ccd714044"));
+            dummy = new DummyDeviceLauncher(1);
             dsun = new DummySunSPOTDevice("SunSPOT-dummy");
-            for (DummyUPnPDevice d : dummy) {
-                d.start();
-            }
+            dummy.start();
         }
 
         // VM終了時の処理
@@ -85,9 +81,7 @@ public class IoTConnector {
             public void run() {
                 LOG.info("IoTConnector will shutdown.");
                 if (IoTConnector.this.debug) {
-                    for (DummyUPnPDevice d : dummy) {
-                        d.stop();
-                    }
+                    dummy.stop();
                     dsun.stop();
                 }
                 upnp.stop();

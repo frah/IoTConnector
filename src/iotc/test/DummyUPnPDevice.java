@@ -99,4 +99,11 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
         return hum.getValue();
     }
     public void setHumidity(float f) {}
+
+    public String getFriendlyName() {
+        return device.getFriendlyName();
+    }
+    public String getUDN() {
+        return device.getUDN();
+    }
 }
