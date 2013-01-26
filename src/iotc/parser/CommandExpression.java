@@ -445,6 +445,7 @@ public class CommandExpression {
 
         LOG.log(Level.INFO, "Command type: {0}", type.name());
         args = type.getArgs(command);
+        LOG.log(Level.INFO, "Arguments: {0}", args.values());
         for (String n : type.getArgNames()) {
             if (n.matches("room|device|sensor")) {
                 id = IdentificationParser.parse(args.get(n));
