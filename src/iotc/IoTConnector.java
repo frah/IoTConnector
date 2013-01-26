@@ -36,7 +36,7 @@ public class IoTConnector {
         LOG = Logger.getLogger(IoTConnector.class.getName());
     }
 
-    public IoTConnector(boolean debug) {
+    public IoTConnector(boolean debug, int dummyNum) {
         this.debug = debug;
 
         // <editor-fold defaultstate="collapsed" desc="ロギング設定読み込み">
@@ -73,13 +73,13 @@ public class IoTConnector {
 
         if (debug) {
             LOG.info("Start with DEBUG MODE");
-            int deviceNum = 10;
+            LOG.log(Level.INFO, "DummyDevice num: {0}", dummyNum);
 
-            dummy = new DummyDeviceLauncher(deviceNum);
+            dummy = new DummyDeviceLauncher(dummyNum);
             dsun = new DummySunSPOTDevice("SunSPOT-dummy");
             dummy.start();
             try {
-                ttester = new TwitterTester(deviceNum);
+                ttester = new TwitterTester(dummyNum, 100);
                 operator.setExpListener(ttester);
                 ttester.start();
             } catch (Exception e) {
@@ -104,9 +104,22 @@ public class IoTConnector {
 
     public static void main(String[] args) {
         boolean debug = false;
+        int dummyNum = 0;
+
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-d")) debug = true;
+            switch (args[i]) {
+                case "-d":
+                    debug = true;
+                    break;
+                case "-n":
+                    if (++i < args.length) {
+                        dummyNum = Integer.valueOf(args[i]);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
-        new IoTConnector(debug);
+        new IoTConnector(debug, dummyNum);
     }
 }
