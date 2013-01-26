@@ -16,11 +16,11 @@
         <property name="name" type="string">
             <column name="name" not-null="true" />
         </property>
-        <set name="terms" inverse="false" table="ref_term_sensor">
+        <set name="terms" inverse="false" table="ref_term_sensor" fetch="join" outer-join="true">
             <key>
                 <column name="sensor" not-null="true" />
             </key>
-            <many-to-many entity-name="iotc.db.Term">
+            <many-to-many entity-name="iotc.db.Term" fetch="join" outer-join="true">
                 <column name="term" not-null="true" />
             </many-to-many>
         </set>

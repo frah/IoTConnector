@@ -39,7 +39,7 @@ public class CommandExpression {
     static enum CommandType {
         /** UPnPコマンドを実行する */
         EXEC_COMMAND    (rb.getString("ct.EXEC_COMMAND.regex"), "device", "command") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
                 Command c = id.getCommand();
                 User u = log.getUser();
@@ -54,11 +54,10 @@ public class CommandExpression {
         },
         /** 指定されたデバイスのコマンド一覧を返す */
         GET_COMLIST     (rb.getString("ct.GET_COMLIST.regex"), "device") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
                 User u = log.getUser();
 
-                Session session = HibernateUtil.getSessionFactory().getCurrentSession();
                 Device d = (Device)session.load(Device.class, id.getDevice().getId());
                 StringBuilder sb = new StringBuilder();
                 for (Command c : (Set<Command>)d.getCommands()) {
@@ -77,10 +76,9 @@ public class CommandExpression {
         },
         /** 指定された部屋のデバイス一覧を返す */
         GET_DEVLIST     (rb.getString("ct.GET_DEVLIST.regex"), "room") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
 
-                Session session = HibernateUtil.getSessionFactory().getCurrentSession();
                 Room r = (Room)session.load(Room.class, id.getRoom().getId());
                 StringBuilder sb = new StringBuilder();
                 for (Device d : (Set<Device>)r.getDevices()) {
@@ -93,8 +91,7 @@ public class CommandExpression {
         },
         /** 部屋一覧を返す */
         GET_ROOMLIST    (rb.getString("ct.GET_ROOMLIST.regex")) {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
-                Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 List<Room> l = session.getNamedQuery("Room.findAll").list();
                 StringBuilder sb = new StringBuilder();
                 for (Room r : l) {
@@ -107,11 +104,10 @@ public class CommandExpression {
         },
         /** 任意のユーザの権限を昇格する */
         SET_POWER       (rb.getString("ct.SET_POWER.regex"), "user", "power", "option") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
                 if (!checkPower(medium, log, PowerEnum.ADMINISTRATOR)) return;
 
-                Session session = HibernateUtil.getSessionFactory().getCurrentSession();
                 User u = getUser((String)args.get("user"), session);
                 PowerEnum p = PowerEnum.valueOf((Integer)args.get("power"));
                 if (p == null) {
@@ -129,23 +125,22 @@ public class CommandExpression {
         },
         /** 任意のユーザにデバイス・コマンドの操作許可を出す */
         SET_POWER_DEVICE    (rb.getString("ct.SET_POWER_DEVICE.regex"), "user", "device", "option") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
                 if (!checkPower(medium, log, PowerEnum.OWNER)) return;
             }
         },
         /** 別名を設定 */
         SET_ALIAS       (rb.getString("ct.SET_ALIAS.regex"), "alias", "device", "command") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
             }
         },
         /** センサ一覧を返す */
         GET_SENSLIST    (rb.getString("ct.GET_SENSLIST.regex"), "device") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 Identification id = getIdentification(args);
 
-                Session session = HibernateUtil.getSessionFactory().getCurrentSession();
                 Device d = id.getDevice();
                 Iterable<Sensor> sensors = null;
                 if (d == null && id.getRoom() != null) {
@@ -176,7 +171,7 @@ public class CommandExpression {
         },
         /** センサ値を返す */
         GET_SENSVALUE   (rb.getString("ct.GET_SENSVALUE.regex"), "sensor") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
                 Identification id = getIdentification(args);
 
@@ -206,14 +201,15 @@ public class CommandExpression {
         },
         /** 条件を満たした時にコマンドを実行する */
         TERM_COMMAND    (rb.getString("ct.TERM_COMMAND.regex"), "term", "device", "command") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 //TODO: Implement this
                 if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
             }
         },
         /** 条件を満たした時に通知する */
         TERM_NOTIFY     (rb.getString("ct.TERM_NOTIFY.regex"), "term") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
+                //TODO: Implement this
                 if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
 
                 Term t = new Term();
@@ -241,13 +237,13 @@ public class CommandExpression {
         },
         /** センサ情報の購読リクエスト */
         SUBSCRIBE_REQ   (rb.getString("ct.SUBSCRIBE_REQ.regex"), "sensor", "term", "frequency") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 //TODO: Implement this
             }
         },
         /** 未定義コマンド */
         UNKNOWN         ("") {
-            @Override protected void process(Medium medium, Log log, Map<String, Object> args) throws Exception {
+            @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 medium.send(log, log.getUser(), rb.getString("ct.UNKNOWN.message"));
             }
         };
@@ -297,13 +293,13 @@ public class CommandExpression {
 
         /**
          * ログレコードをアップデートする
+         * @param session
          * @param log
          * @param state
          * @param com
          * @param variable
          */
-        private static void updateLog(Log log, LogState state, Command com, String variable) {
-            Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        private static void updateLog(Session session, Log log, LogState state, Command com, String variable) {
             Transaction t = session.beginTransaction();
             try {
                 log.setState(state.getId());
@@ -321,11 +317,12 @@ public class CommandExpression {
 
         /**
          * ログの状態を変更する
+         * @param session
          * @param log
          * @param state
          */
-        private static void updateLog(Log log, LogState state) {
-            updateLog(log, state, null, null);
+        private static void updateLog(Session session, Log log, LogState state) {
+            updateLog(session, log, state, null, null);
         }
 
         /**
@@ -386,27 +383,32 @@ public class CommandExpression {
             args.put("ID", id);
             args.putAll(getArgs(com));
 
+            Session s = HibernateUtil.getSessionFactory().openSession();
+            Transaction t = s.beginTransaction();
             try {
-                process(medium, log, args);
+                Log l = (Log)s.load(Log.class, log.getId());
+                process(medium, l, s, args);
+                t.commit();
                 ls = LogState.COMPLETE;
                 return true;
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, "Command "+name()+" execution failed", ex);
                 return false;
             } finally {
-                updateLog(log, ls);
+                updateLog(s, log, ls);
+                s.close();
             }
         }
 
         /**
          * コマンド処理の中身
-         *
          * @param medium
          * @param log
+         * @param session
          * @param args
          * @throws Exception
          */
-        protected abstract void process(Medium medium, Log log, Map<String, Object> args) throws Exception;
+        protected abstract void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception;
 
         /**
          * 与えられた文字列にマッチするコマンドを返す．なければnull
