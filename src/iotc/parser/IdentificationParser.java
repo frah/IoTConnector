@@ -121,9 +121,14 @@ public final class IdentificationParser {
         try {
             d = (Device)s.load(Device.class, d.getId());
             for (Command c : (Set<Command>)d.getCommands()) {
+                try {
                 if (c.getName().equals(command) || c.getAliasName().equals(command)) {
                     id.setCommand(c);
                     break;
+                }
+                } catch (NullPointerException ex) {
+                    //FIXME
+                    LOG.log(Level.WARNING, "nullpo {0} {1}", new Object[]{c, command});
                 }
             }
         } catch (HibernateException ex) {
