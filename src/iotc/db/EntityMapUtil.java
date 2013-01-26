@@ -120,14 +120,18 @@ public class EntityMapUtil {
         if (o instanceof Device) {
             d = (Device)o;
         } else {
+            s.close();
             throw new UPnPException("This is an unregistered device");
         }
         Set<Sensor> sensors = d.getSensors();
         for (Sensor sens : sensors) {
             if (sens.getName().equals(upprsv.getName())) {
+                s.evict(sens);
+                s.close();
                 return sens;
             }
         }
+        s.close();
 
         throw new UPnPException("This is an unregistered sensor");
     }

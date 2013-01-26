@@ -95,7 +95,7 @@ public class Sensor  implements java.io.Serializable {
     public void setName(String name) {
         this.name = name;
     }
-@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
     @JoinTable(name="ref_term_sensor", catalog="iotc", joinColumns = {
         @JoinColumn(name="sensor", nullable=false, updatable=false) }, inverseJoinColumns = {
         @JoinColumn(name="term", nullable=false, updatable=false) })
