@@ -1,6 +1,5 @@
 package iotc;
 
-import com.sun.javaws.ui.SecureStaticVersioning;
 import iotc.common.UPnPException;
 import iotc.db.*;
 import iotc.event.UPnPEventListener;
@@ -9,9 +8,7 @@ import org.hibernate.Session;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,15 +24,11 @@ import java.util.regex.Pattern;
 public class VariableChecker implements UPnPEventListener {
     private HashMap<String, Sensor> sensor;
     private static final Logger LOG;
-    private static final List<Pattern> patternList;
+    private static final Pattern TERM_PATTERN;
 
     static {
         LOG = Logger.getLogger(VariableChecker.class.getName());
-
-        patternList = new ArrayList();
-        patternList.add(Pattern.compile("(\\d+) ?(=) ?(\\d+)"));
-        patternList.add(Pattern.compile("(\\d+) ?(<) ?(\\d+)"));
-        patternList.add(Pattern.compile("(\\d+) ?(>) ?(\\d+)"));
+        TERM_PATTERN = Pattern.compile("([-+]?\\d+\\.?[\\d]*) ?([=<>]) ?([-+]?\\d+\\.?[\\d]*)");
     }
 
     public VariableChecker() {
@@ -59,36 +52,35 @@ public class VariableChecker implements UPnPEventListener {
             }
         }
 
-        Session ses = HibernateUtil.getSessionFactory().getCurrentSession();
+        Session ses = HibernateUtil.getSessionFactory().openSession();
         ses.beginTransaction();
         s = (Sensor)ses.load(iotc.db.Sensor.class, s.getId());
         for (Term t : (Set<Term>)s.getTerms()) {
             //TODO: 複数の変数に対応できるように要修正
             String ts = t.getTerm();
             LOG.log(Level.FINE, "Check term: {0}", ts);
-            ts.replaceAll("([^:]+)(::[^:]+)*", (String)upprsv.getValue());
-            for (Pattern p : patternList) {
-                Matcher m = p.matcher(ts);
-                if (m.matches()) {
-                    boolean b = false;
-                    switch (m.group(2)) {
-                        case "=":
-                            b = (Double.valueOf(m.group(1)) == Double.valueOf(m.group(3)));
-                            break;
-                        case "<":
-                            b = (Double.valueOf(m.group(1)) < Double.valueOf(m.group(3)));
-                            break;
-                        case ">":
-                            b = (Double.valueOf(m.group(1)) > Double.valueOf(m.group(3)));
-                            break;
-                    }
-                    if (b) {
-                        // Execute action
-                        Log l = new Log();
+            ts = ts.replaceAll("([^: <>=\\d][^: <>=]+)(::[^: <>=]+)*", String.valueOf(upprsv.getValue()));
+            Matcher m = TERM_PATTERN.matcher(ts);
+            if (m.matches()) {
+                boolean b = false;
+                switch (m.group(2)) {
+                    case "=":
+                        b = (Double.valueOf(m.group(1)) == Double.valueOf(m.group(3)));
+                        break;
+                    case "<":
+                        b = (Double.valueOf(m.group(1)) < Double.valueOf(m.group(3)));
+                        break;
+                    case ">":
+                        b = (Double.valueOf(m.group(1)) > Double.valueOf(m.group(3)));
+                        break;
+                }
+                LOG.log(Level.FINE, "{0} = {1}", new Object[]{ts, b});
+                if (b) {
+                    // Execute action
+                    Log l = new Log();
 
-                        //FIXME: create resource bundle
-                        SMediumMap.get(iotc.medium.Twitter.class).send(null, t.getUser(), ts+"の条件を満たしました");
-                    }
+                    //FIXME: create resource bundle
+                    SMediumMap.get(iotc.medium.Twitter.class).send(null, t.getUser(), ts+"の条件を満たしました");
                 }
             }
         }
