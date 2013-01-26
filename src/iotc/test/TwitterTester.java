@@ -37,6 +37,7 @@ public class TwitterTester implements Runnable, ExpEventListener {
     private Map<Long, LogContainer> timeLogs;
     private boolean isRunning = false;
     private final int dummyRange;
+    private int limitCount = 0;
 
     private static final String[] COMS;
     private static final String OUT_PATH;
@@ -65,6 +66,17 @@ public class TwitterTester implements Runnable, ExpEventListener {
         twitter = new TwitterFactory(conf).getInstance();
         dummyRange = range;
         th = new Thread(this);
+    }
+
+    /**
+     * 最大ツイート回数を指定して初期化
+     * @param range 使用するダミーデバイスの数
+     * @param limit 最大ツイート回数
+     * @throws TwitterException Twitterの設定に失敗した場合
+     */
+    public TwitterTester(int range, int limit) throws TwitterException {
+        this(range);
+        limitCount = limit;
     }
 
     private Configuration configure() {
@@ -190,6 +202,9 @@ public class TwitterTester implements Runnable, ExpEventListener {
             // clean
             sb.setLength(0);
             st = null;
+            if (limitCount > 0 && limitCount <= tweetNum) {
+                break;
+            }
 
             try {
                 Thread.sleep(rand.nextInt(30000));
