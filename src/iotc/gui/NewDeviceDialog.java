@@ -263,19 +263,18 @@ public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListe
         UPnPActionTableModel actionModel = (UPnPActionTableModel)comTable.getModel();
         UPnPVariableTableModel varModel = (UPnPVariableTableModel)varTable.getModel();
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        Transaction t = s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
 
         if (device.getType() != DeviceType.NonUPnP.getId()) {
             Query q = s.getNamedQuery("Device.findFromUDN");
             q.setString("udn", device.getUdn());
             if (q.uniqueResult() != null) {
-                s.getTransaction().commit();
                 JOptionPane.showMessageDialog(this, "This device is already added", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
 
+        Transaction t = s.beginTransaction();
         try {
             Serializable id = s.save(device);
             Device d = (Device)s.load(Device.class, id);
@@ -300,6 +299,8 @@ public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListe
         } catch (HibernateException ex) {
             t.rollback();
             JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            s.close();
         }
 
         if (isSuccess) {
@@ -335,15 +336,15 @@ public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListe
      * 部屋一覧を更新する
      */
     private void updateRoomList() {
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         Query q = s.getNamedQuery("Room.findAll");
 
         roomCombo.removeAllItems();;
         for (Room r : (List<Room>)q.list()) {
             roomCombo.addItem(r);
         }
-        s.getTransaction().commit();
+
+        s.close();
     }
 
     // <editor-fold defaultstate="collapsed" desc="Table functions">
@@ -359,14 +360,13 @@ public class NewDeviceDialog extends javax.swing.JDialog implements DBEventListe
             combo.removeActionListener(al);
         }
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         Query q = s.getNamedQuery("SensorType.findAll");
         for (SensorType st : (List<SensorType>)q.list()) {
             combo.addItem(st);
         }
+        s.close();
         combo.addItem("Add new type...");
-        s.getTransaction().commit();
 
         for (ActionListener al : als) {
             combo.addActionListener(al);

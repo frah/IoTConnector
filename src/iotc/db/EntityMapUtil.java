@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.itolab.morihit.clinkx.UPnPRemoteAction;
 import org.itolab.morihit.clinkx.UPnPRemoteActionArgument;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
@@ -114,8 +113,7 @@ public class EntityMapUtil {
 
         Device d;
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        Transaction t = s.beginTransaction();
+        Session s = HibernateUtil.getSessionFactory().openSession();
         Query q = s.getNamedQuery("Device.findFromUDN");
         q.setString("udn", upprd.getUDN());
         Object o = q.uniqueResult();
@@ -127,12 +125,10 @@ public class EntityMapUtil {
         Set<Sensor> sensors = d.getSensors();
         for (Sensor sens : sensors) {
             if (sens.getName().equals(upprsv.getName())) {
-                t.commit();
                 return sens;
             }
         }
 
-        t.commit();
         throw new UPnPException("This is an unregistered sensor");
     }
 }

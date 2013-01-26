@@ -39,9 +39,7 @@ public abstract class AbstractMedium implements Medium {
         newLog.setComVariable(message);
 
         Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.beginTransaction();
         s.save(newLog);
-        s.getTransaction().commit();
 
         return mediumID != null;
     }
