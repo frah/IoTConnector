@@ -7,7 +7,6 @@ import iotc.db.User;
 import iotc.event.CommandEventListener;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,15 +20,15 @@ public abstract class AbstractMedium implements Medium {
 
     /**
      * メッセージ送信の内部処理
-     * @param log メッセージ送信元のログ
      * @param user メッセージ送信ユーザ
      * @param message メッセージ本文
+     * @param replyId リプライ先ID，なければnull
      * @return 送信したメッセージのID
      */
-    protected abstract String _send(Log log, User user, String message);
+    protected abstract String _send(User user, String message, String replyId);
     @Override
     public final boolean send(Log log, User user, String message) {
-        String mediumID = _send(log, user, message);
+        String mediumID = _send(user, message, log!=null?log.getMediumId():null);
 
         Log newLog = new Log();
         newLog.setState(mediumID!=null?LogState.COMPLETE.getId():LogState.ERROR.getId());
@@ -38,8 +37,15 @@ public abstract class AbstractMedium implements Medium {
         newLog.setUser(user);
         newLog.setComVariable(message);
 
-        Session s = HibernateUtil.getSessionFactory().getCurrentSession();
-        s.save(newLog);
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        s.beginTransaction();
+        try {
+            s.save(newLog);
+            s.getTransaction().commit();
+        } catch (HibernateException ex) {
+            s.getTransaction().rollback();
+        }
+        s.close();
 
         return mediumID != null;
     }

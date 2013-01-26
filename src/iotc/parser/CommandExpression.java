@@ -209,7 +209,6 @@ public class CommandExpression {
         /** 条件を満たした時に通知する */
         TERM_NOTIFY     (rb.getString("ct.TERM_NOTIFY.regex"), "term") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
-                //TODO: Implement this
                 if (!checkPower(medium, log, PowerEnum.FAMILY)) return;
 
                 Term t = new Term();
@@ -227,10 +226,11 @@ public class CommandExpression {
                 }
                 t.setSensors(sens);
 
-                Session s = HibernateUtil.getSessionFactory().getCurrentSession();
+                Session s = HibernateUtil.getSessionFactory().openSession();
                 s.beginTransaction();
                 s.save(t);
                 s.getTransaction().commit();
+                s.close();
 
                 medium.send(log, log.getUser(), rb.getString("ct.TERM_NOTIFY.complete"));
             }

@@ -45,7 +45,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
 
     /* Implementation of Medium */
     @Override
-    protected String _send(Log log, User user, String message) {
+    protected String _send(User user, String message, String replyId) {
         StringBuilder sb = new StringBuilder(message);
         if (user != null) {
             String scname = user.getSpecificAliasName(this.getClass().getName());
@@ -59,8 +59,8 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         }
 
         StatusUpdate st = new StatusUpdate(sb.toString());
-        if (log != null) {
-            Long twId = Long.valueOf(log.getMediumId());
+        if (replyId != null) {
+            Long twId = Long.valueOf(replyId);
             if (twId != null) {
                 st.setInReplyToStatusId(twId);
             }
@@ -78,7 +78,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
 
             LOG.log(Level.FINER, ex.getErrorMessage());
             String ctm = String.valueOf(System.currentTimeMillis());
-            return _send(log, user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"));
+            return _send(user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"), replyId);
         }
         return s!=null?Long.toString(s.getId()):null;
     }
