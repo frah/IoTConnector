@@ -8,13 +8,11 @@ import iotc.event.UPnPEventListener;
 import iotc.medium.SMediumMap;
 import org.apache.commons.collections15.multimap.MultiHashMap;
 import org.hibernate.classic.Session;
-import org.hibernate.hql.ast.tree.SessionFactoryAwareNode;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
 import org.itolab.morihit.clinkx.UPnPRemoteStateVariable;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -29,17 +27,21 @@ import java.util.regex.Pattern;
 public class VariableChecker implements UPnPEventListener, DBEventListener {
     private HashMap<String, Sensor> sensor;
     private MultiHashMap<String, Term> terms;
+    private Set<Integer> fireFlags;
     private static final Logger LOG;
     private static final Pattern TERM_PATTERN;
+    private static final ResourceBundle rb;
 
     static {
         LOG = Logger.getLogger(VariableChecker.class.getName());
         TERM_PATTERN = Pattern.compile("([-+]?\\d+\\.?[\\d]*) ?([=<>]) ?([-+]?\\d+\\.?[\\d]*)");
+        rb = ResourceBundle.getBundle("iotc.i18n.VariableChecker");
     }
 
     public VariableChecker() {
         sensor = new HashMap();
         terms = new MultiHashMap();
+        fireFlags = new HashSet();
         DBEventListenerManager.getInstance().addListener(this, "Term");
     }
 
@@ -93,11 +95,17 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
                 }
                 LOG.log(Level.FINE, "{0} = {1}", new Object[]{ts, b});
                 if (b) {
+                    if (fireFlags.contains(t.getId())) {
+                        LOG.log(Level.FINE, "This term was already fired.");
+                        continue;
+                    }
                     // Execute action
                     Log l = new Log();
 
-                    //FIXME: create resource bundle
-                    SMediumMap.get(iotc.medium.Twitter.class).send(null, t.getUser(), ts+"の条件を満たしました");
+                    SMediumMap.get(iotc.medium.Twitter.class).send(null, t.getUser(), MessageFormat.format(rb.getString("NotificationMessage"), ts));
+                    fireFlags.add(t.getId());
+                } else {
+                    fireFlags.remove(t.getId());
                 }
             }
         }
