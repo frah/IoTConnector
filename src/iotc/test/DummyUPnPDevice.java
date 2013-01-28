@@ -12,6 +12,7 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
     private final Thread th;
     private final UPnPDevice device;
     private boolean isStop = false;
+    private boolean isRandom = false;
 
     private UPnPFloatStateVariable    illum;
     private UPnPFloatStateVariable      temp;
@@ -33,6 +34,10 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
 
         th = new Thread(this);
     }
+    public DummyUPnPDevice(String deviceName, boolean isRandom) {
+        this(deviceName);
+        this.isRandom = isRandom;
+    }
 
     private void addVariable(UPnPService service, UPnPStateVariable ...variables) {
         for (UPnPStateVariable val : variables) {
@@ -52,19 +57,23 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
         illum.setValue(1000);
         hum.setValue(50.0f);
 
-        this.isStop = false;
-        th.start();
+        device.start();
+        if (isRandom) {
+            this.isStop = false;
+            th.start();
+        }
     }
 
     public synchronized void stop() {
         device.stop();
-        this.isStop = true;
+        if (isRandom) {
+            this.isStop = true;
+            th.interrupt();
+        }
     }
 
     @Override
     public void run() {
-        device.start();
-
         while (!isStop) {
             /* Update variable value at random */
             Random r = new Random();
@@ -90,15 +99,21 @@ public class DummyUPnPDevice implements Runnable, UPnPActionListener {
     public float getTemperature() {
         return temp.getValue();
     }
-    public void setTemperature(float f) {}
+    public void setTemperature(float f) {
+        temp.setValue(f);
+    }
     public float getIlluminance() {
         return illum.getValue();
     }
-    public void setIlluminance(float i) {}
+    public void setIlluminance(float i) {
+        illum.setValue(i);
+    }
     public float getHumidity() {
         return hum.getValue();
     }
-    public void setHumidity(float f) {}
+    public void setHumidity(float f) {
+        hum.setValue(f);
+    }
 
     public String getFriendlyName() {
         return device.getFriendlyName();

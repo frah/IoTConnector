@@ -33,7 +33,7 @@ public class DummyDeviceLauncher {
 
         for (int i = 0; i < num; i++) {
             String fName = String.format("Dummy-%03d", i);
-            DummyUPnPDevice duppd = new DummyUPnPDevice(fName);
+            DummyUPnPDevice duppd = new DummyUPnPDevice(fName, true);
             String udn = duppd.getUDN();
 
             Query q = s.getNamedQuery("Device.findFromUDN");
@@ -77,6 +77,21 @@ public class DummyDeviceLauncher {
                     }
                     t = null;
                 }
+
+                // Temperatureセンサを自動登録
+                Sensor sens = new Sensor();
+                sens.setDevice(d);
+                sens.setName("Temperature");
+                sens.setSensorType((SensorType)s.load(SensorType.class, 1));
+
+                try {
+                    t = s.beginTransaction();
+                    s.save(sens);
+                    t.commit();
+                } catch (HibernateException ex) {
+                    if (t != null) t.rollback();
+                }
+                t = null;
             }
             dummies.add(duppd);
         }

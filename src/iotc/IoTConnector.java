@@ -5,6 +5,7 @@ import iotc.medium.SMediumMap;
 import iotc.medium.Twitter;
 import iotc.test.DummyDeviceLauncher;
 import iotc.test.DummySunSPOTDevice;
+import iotc.test.TermTester;
 import iotc.test.TwitterTester;
 
 import java.util.logging.Level;
@@ -36,12 +37,13 @@ public class IoTConnector {
         LOG = Logger.getLogger(IoTConnector.class.getName());
     }
 
-    public IoTConnector(boolean debug, int dummyNum) {
+    public IoTConnector(boolean debug, int dummyNum, int testMode) {
         this.debug = debug;
 
         // <editor-fold defaultstate="collapsed" desc="ロギング設定読み込み">
         java.io.InputStream in;
         if (debug) {
+            LOG.info("Start with DEBUG MODE");
             in = this.getClass().getResourceAsStream("/META-INF/"+DEBUG_LOGGING_PROPERTIES);
         } else {
             in = this.getClass().getResourceAsStream("/META-INF/"+DEFAULT_LOGGING_PROPERTIES);
@@ -71,19 +73,33 @@ public class IoTConnector {
         SMediumMap.put(new Twitter(debug));
         SMediumMap.addListenerForAll(operator);
 
-        if (debug) {
-            LOG.info("Start with DEBUG MODE");
+        if (debug && dummyNum > 0) {
             LOG.log(Level.INFO, "DummyDevice num: {0}", dummyNum);
+            LOG.log(Level.INFO, "Run testing script: {0}", testMode);
 
-            dummy = new DummyDeviceLauncher(dummyNum);
-            dsun = new DummySunSPOTDevice("SunSPOT-dummy");
-            dummy.start();
-            try {
-                ttester = new TwitterTester(dummyNum, 100);
-                operator.setExpListener(ttester);
-                ttester.start();
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Initialize TwitterTester failed", e);
+            switch (testMode) {
+                case 1: {
+                    dummy = new DummyDeviceLauncher(dummyNum);
+                    dummy.start();
+
+                    try {
+                        ttester = new TwitterTester(dummyNum, 100);
+                        operator.setExpListener(ttester);
+                        ttester.start();
+                    } catch (Exception e) {
+                        LOG.log(Level.WARNING, "Initialize TwitterTester failed", e);
+                    }
+                    break;
+                }
+                case 2: {
+                    dummy = new DummyDeviceLauncher(dummyNum-1);
+                    dummy.start();
+                    new TermTester().start();
+                    break;
+                }
+                case 3: {
+                    dsun = new DummySunSPOTDevice("SunSPOT-dummy");
+                }
             }
         }
 
@@ -93,9 +109,9 @@ public class IoTConnector {
             public void run() {
                 LOG.info("IoTConnector will shutdown.");
                 if (IoTConnector.this.debug) {
-                    ttester.stop();
-                    dummy.stop();
-                    dsun.stop();
+                    if (ttester == null) ttester.stop();
+                    if (dummy == null) dummy.stop();
+                    if (dsun == null) dsun.stop();
                 }
                 upnp.stop();
             }
@@ -105,21 +121,26 @@ public class IoTConnector {
     public static void main(String[] args) {
         boolean debug = false;
         int dummyNum = 0;
+        int testMode = 0;
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "-d":
+                case "-D":
                     debug = true;
                     break;
-                case "-n":
+                case "-d":
                     if (++i < args.length) {
                         dummyNum = Integer.valueOf(args[i]);
                     }
                     break;
+                case "-t":
+                    if (++i < args.length) {
+                        testMode = Integer.valueOf(args[i]);
+                    }
                 default:
                     break;
             }
         }
-        new IoTConnector(debug, dummyNum);
+        new IoTConnector(debug, dummyNum, testMode);
     }
 }
