@@ -94,7 +94,9 @@ public class IoTConnector {
                 case 2: {
                     dummy = new DummyDeviceLauncher(dummyNum-1);
                     dummy.start();
-                    new TermTester().start();
+                    TermTester tt = new TermTester();
+                    valChk.addExpEventListener(tt);
+                    tt.start();
                     break;
                 }
                 case 3: {

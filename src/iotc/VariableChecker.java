@@ -6,6 +6,7 @@ import iotc.event.DBEventListener;
 import iotc.event.DBEventListenerManager;
 import iotc.event.UPnPEventListener;
 import iotc.medium.SMediumMap;
+import iotc.test.ExpEventListener;
 import org.apache.commons.collections15.multimap.MultiHashMap;
 import org.hibernate.classic.Session;
 import org.itolab.morihit.clinkx.UPnPRemoteDevice;
@@ -28,6 +29,7 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
     private HashMap<String, Sensor> sensor;
     private MultiHashMap<String, Term> terms;
     private Set<Integer> fireFlags;
+    private ExpEventListener listener;
     private static final Logger LOG;
     private static final Pattern TERM_PATTERN;
     private static final ResourceBundle rb;
@@ -103,6 +105,9 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
                     Log l = new Log();
 
                     SMediumMap.get(iotc.medium.Twitter.class).send(null, t.getUser(), MessageFormat.format(rb.getString("NotificationMessage"), ts));
+                    if (listener != null) {
+                        listener.onCommandComplete(String.valueOf(System.currentTimeMillis()));
+                    }
                     fireFlags.add(t.getId());
                 } else {
                     fireFlags.remove(t.getId());
@@ -164,5 +169,9 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
             }
             terms.put(key, t);
         }
+    }
+
+    public void addExpEventListener(ExpEventListener l) {
+        this.listener = l;
     }
 }
