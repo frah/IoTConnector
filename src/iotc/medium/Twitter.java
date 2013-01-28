@@ -51,11 +51,10 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
 
     /* Implementation of Medium */
     @Override
-    protected String _send(User user, String message, String replyId) {
+    protected String _send(String message, String user, String replyId) {
         StringBuilder sb = new StringBuilder(message);
         if (user != null) {
-            String scname = user.getSpecificAliasName(this.getClass().getName());
-            sb.insert(0, "@" + scname + " ");
+            sb.insert(0, "@" + user + " ");
         }
 
         // Check message length
@@ -76,7 +75,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             if (!isSilent) {
                 s = t.updateStatus(st);
             }
-            LOG.log(Level.INFO, "Twitter updated: {0}, ({1})", new Object[]{s, s.getClass()});
+            LOG.log(Level.INFO, "Twitter updated: {0}{1}", new Object[]{st, isSilent?" (silent)":""});
 
         } catch (TwitterException ex) {
             if (ex.getErrorCode() != 187) {
@@ -86,7 +85,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
 
             LOG.log(Level.FINER, ex.getErrorMessage());
             String ctm = String.valueOf(System.currentTimeMillis());
-            return _send(user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"), replyId);
+            return _send(message.concat(" ("+ctm.substring(ctm.length()/2)+")"), user, replyId);
         }
 
         if (isSilent) return "0000000000000";

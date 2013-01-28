@@ -20,15 +20,20 @@ public abstract class AbstractMedium implements Medium {
 
     /**
      * メッセージ送信の内部処理
-     * @param user メッセージ送信ユーザ
+     *
+     *
      * @param message メッセージ本文
+     * @param user メッセージ送信ユーザ
      * @param replyId リプライ先ID，なければnull
      * @return 送信したメッセージのID
      */
-    protected abstract String _send(User user, String message, String replyId);
+    protected abstract String _send(String message, String user, String replyId);
     @Override
     public final boolean send(Log log, User user, String message) {
-        String mediumID = _send(user, message, log!=null?log.getMediumId():null);
+        Session s = HibernateUtil.getSessionFactory().openSession();
+
+        user = (User)s.load(User.class, user.getId());
+        String mediumID = _send(message, user!=null?user.getSpecificAliasName(this.getClass().getName()):null, log!=null?log.getMediumId():null);
 
         Log newLog = new Log();
         newLog.setState(mediumID!=null?LogState.COMPLETE.getId():LogState.ERROR.getId());
@@ -37,7 +42,6 @@ public abstract class AbstractMedium implements Medium {
         newLog.setUser(user);
         newLog.setComVariable(message);
 
-        Session s = HibernateUtil.getSessionFactory().openSession();
         s.beginTransaction();
         try {
             s.save(newLog);
