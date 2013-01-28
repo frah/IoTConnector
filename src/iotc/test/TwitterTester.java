@@ -50,8 +50,8 @@ public class TwitterTester implements Runnable, ExpEventListener {
                 "GetIlluminance",
                 "GetHumidity"
         };
-        OUT_PATH = "C:\\output.csv";
-        TIME_SPAN = 60;
+        OUT_PATH = "C:\\ex1-";
+        TIME_SPAN = 120;
         LOG = Logger.getLogger(TwitterTester.class.getName());
     }
 
@@ -140,7 +140,7 @@ public class TwitterTester implements Runnable, ExpEventListener {
      * @throws IOException ログファイルを開くのに失敗した場合
      */
     public synchronized void start() throws IOException {
-        fw = new FileWriter(OUT_PATH, false);
+        fw = new FileWriter(OUT_PATH+dummyRange+".csv", false);
         timeLogs = Collections.synchronizedMap(new HashMap());
 
         isRunning = true;
@@ -171,6 +171,9 @@ public class TwitterTester implements Runnable, ExpEventListener {
         StringBuilder sb = new StringBuilder(140);
         Status st = null;
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {}
         while (isRunning) {
             sb.append("@tm_sys_ ")
                     .append("[").append(++tweetNum).append("] ")
@@ -185,13 +188,15 @@ public class TwitterTester implements Runnable, ExpEventListener {
                 st = twitter.updateStatus(sb.toString());
                 if (st != null) {
                     LOG.log(Level.INFO, "New status: {0} [{1}]", new Object[]{st.getText(), st.getId()});
-                    LogContainer lc = timeLogs.get(st.getId());
-                    if (lc != null) {
-                        lc.setTweetTime(t);
-                    } else {
-                        lc = new LogContainer(t);
+                    synchronized (timeLogs) {
+                        LogContainer lc = timeLogs.get(st.getId());
+                        if (lc != null) {
+                            lc.setTweetTime(t);
+                        } else {
+                            lc = new LogContainer(t);
+                        }
+                        timeLogs.put(st.getId(), lc);
                     }
-                    timeLogs.put(st.getId(), lc);
                 } else {
                     LOG.warning("Some error is occurred on tweeting");
                     tweetNum--;
@@ -220,14 +225,16 @@ public class TwitterTester implements Runnable, ExpEventListener {
     public void onReceiveCommand(String mediumId) {
         long t = System.currentTimeMillis();
         Long key = Long.valueOf(mediumId);
-        LogContainer lc = timeLogs.get(key);
-        if (lc != null) {
-            lc.setFetchTime(t);
-        } else {
-            lc = new LogContainer();
-            lc.setFetchTime(t);
+        synchronized (timeLogs) {
+            LogContainer lc = timeLogs.get(key);
+            if (lc != null) {
+                lc.setFetchTime(t);
+            } else {
+                lc = new LogContainer();
+                lc.setFetchTime(t);
+            }
+            timeLogs.put(key, lc);
         }
-        timeLogs.put(key, lc);
     }
 
     @Override
