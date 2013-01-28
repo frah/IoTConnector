@@ -80,7 +80,7 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
             //TODO: 複数の変数に対応できるように要修正
             String ts = t.getTerm();
             LOG.log(Level.FINE, "Check term: {0}", ts);
-            ts = ts.replaceAll("([^: <>=\\d][^: <>=]+)(::[^: <>=]+)*", String.valueOf(upprsv.getValue()));
+            ts = ts.replaceAll("([^: <>=.\\d][^: <>=.]+)(::[^: <>=.]+)*", String.valueOf(upprsv.getValue()));
             Matcher m = TERM_PATTERN.matcher(ts);
             if (m.matches()) {
                 boolean b = false;
@@ -98,7 +98,7 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
                 LOG.log(Level.FINE, "{0} = {1}", new Object[]{ts, b});
                 if (b) {
                     if (fireFlags.contains(t.getId())) {
-                        LOG.log(Level.FINE, "This term was already fired.");
+                        LOG.log(Level.INFO, "This term was already fired.");
                         continue;
                     }
                     // Execute action
@@ -135,6 +135,7 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
 
     @Override
     public void onCreate(String entityName, Object entity) {
+        LOG.log(Level.INFO, "New term record: {0}", entity);
         Term t = (Term)entity;
         String key = generateKey(t);
         if (key != null) terms.put(key, t);
