@@ -21,6 +21,7 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
     private twitter4j.Twitter t;
     private TwitterStream ts;
     private LRUMap<Long, Log> relations;
+    private boolean isSilent = false;
 
     private static final String ACCOUNT;
     private static final Logger LOG;
@@ -36,6 +37,11 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         ts.user(new String[]{ACCOUNT.substring(1)});
         relations = new LRUMap(50);
         LOG.info("Twitter stream listening start.");
+    }
+
+    public Twitter(boolean isSilent) {
+        this();
+        this.isSilent = isSilent;
     }
 
     public void stop() {
@@ -67,8 +73,10 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
         }
         Status s = null;
         try {
-            s = t.updateStatus(st);
-            LOG.log(Level.INFO, "Twitter updated: {0}", st);
+            if (!isSilent) {
+                s = t.updateStatus(st);
+            }
+            LOG.log(Level.INFO, "Twitter updated: {0}, ({1})", new Object[]{s, s.getClass()});
 
         } catch (TwitterException ex) {
             if (ex.getErrorCode() != 187) {
@@ -80,7 +88,9 @@ public class Twitter extends AbstractMedium implements UserStreamListener {
             String ctm = String.valueOf(System.currentTimeMillis());
             return _send(user, message.concat(" ("+ctm.substring(ctm.length()/2)+")"), replyId);
         }
-        return s!=null?Long.toString(s.getId()):null;
+
+        if (isSilent) return "0000000000000";
+        else return s!=null?Long.toString(s.getId()):null;
     }
 
     /* Implementation of UserStreamListener */

@@ -68,7 +68,7 @@ public class IoTConnector {
 
         operator = new CommandOperator();
 
-        SMediumMap.put(new Twitter());
+        SMediumMap.put(new Twitter(debug));
         SMediumMap.addListenerForAll(operator);
 
         if (debug) {
