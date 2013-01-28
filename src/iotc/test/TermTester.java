@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -69,6 +70,7 @@ public class TermTester implements Runnable, ExpEventListener {
                 s.save(d);
                 t.commit();
             } catch (HibernateException ex) {
+                LOG.log(Level.WARNING, "Failed to add new device", ex);
                 if (t != null) t.rollback();
             }
             t = null;
@@ -83,6 +85,7 @@ public class TermTester implements Runnable, ExpEventListener {
                 s.save(sens);
                 t.commit();
             } catch (HibernateException ex) {
+                LOG.log(Level.WARNING, "Failed to add new sensor", ex);
                 if (t != null) t.rollback();
             }
             t = null;
@@ -96,18 +99,21 @@ public class TermTester implements Runnable, ExpEventListener {
     public void start() {
         duppd.start();
         th.start();
+        LOG.info("Test thread for terms START");
     }
 
     @Override
     public void run() {
         Random rand = new Random(System.currentTimeMillis());
 
-        for (int termNum : new int[]{1, 10, 50, 100}) {
+        //for (int termNum : new int[]{1, 10, 50, 100}) {
+        for (int termNum : new int[]{1}) {
             Session s = HibernateUtil.getSessionFactory().openSession();
             Transaction t = null;
             try {
                 fw = new FileWriter(OUT_PATH+termNum+".csv");
             } catch (IOException e) {
+                LOG.log(Level.WARNING, "Failed to open log file", e);
                 continue;
             }
 
@@ -133,16 +139,18 @@ public class TermTester implements Runnable, ExpEventListener {
 
                 for (int i = 0; i < termNum; i++) {
                     Term term = new Term();
-                    term.setUser((User)s.load(User.class, 1));
-                    term.setSensors(d.getSensors());
-                    //TODO: Implement here
-                    term.setTerm("");
+                    term.setUser((User)s.load(User.class, 2));
+                    Set<Sensor> senss = term.getSensors();
+                    senss.addAll(d.getSensors());
+                    term.setSensors(senss);
+                    term.setTerm(d.getRoom().getName()+"::"+d.getName()+"::"+sens.getSensorType().getName()+" > 36.0");
 
                     try {
                         t = s.beginTransaction();
                         s.save(term);
                         t.commit();
                     } catch (HibernateException ex) {
+                        LOG.log(Level.WARNING, "Failed to add new term", ex);
                         if (t != null) t.rollback();
                     }
                     t = null;
@@ -152,8 +160,19 @@ public class TermTester implements Runnable, ExpEventListener {
 
             /* センサ値の切り替え（マッチイベントの発生） */
             for (int i = 0; i < count; i++) {
-                //TODO: Implement here
-                duppd.setTemperature(rand.nextFloat());
+                try {
+                    Thread.sleep(rand.nextInt(60)*1000);
+                } catch (InterruptedException e) {}
+
+                LOG.log(Level.INFO, "[{0}] Fire term event", i+1);
+                timeLogs.add(System.currentTimeMillis());
+                duppd.setTemperature(40.0f);
+
+                try {
+                    Thread.sleep(rand.nextInt(3)*1000);
+                } catch (InterruptedException e) {}
+
+                duppd.setTemperature(24.0f);
             }
 
             try {
@@ -175,11 +194,7 @@ public class TermTester implements Runnable, ExpEventListener {
             fw.write(a+","+b+"\r\n");
             fw.flush();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
-        if (timeLogs.isEmpty()) {
-            th.notify();
+            LOG.log(Level.WARNING, "Failed to save file", e);
         }
     }
 }

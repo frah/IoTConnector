@@ -94,7 +94,7 @@ public class IoTConnector {
                 case 2: {
                     dummy = new DummyDeviceLauncher(dummyNum-1);
                     dummy.start();
-                    TermTester tt = new TermTester();
+                    TermTester tt = new TermTester(100);
                     valChk.addExpEventListener(tt);
                     tt.start();
                     break;
@@ -111,9 +111,9 @@ public class IoTConnector {
             public void run() {
                 LOG.info("IoTConnector will shutdown.");
                 if (IoTConnector.this.debug) {
-                    if (ttester == null) ttester.stop();
-                    if (dummy == null) dummy.stop();
-                    if (dsun == null) dsun.stop();
+                    if (ttester != null) ttester.stop();
+                    if (dummy != null) dummy.stop();
+                    if (dsun != null) dsun.stop();
                 }
                 upnp.stop();
             }
