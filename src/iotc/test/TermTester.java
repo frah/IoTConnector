@@ -26,6 +26,7 @@ public class TermTester implements Runnable, ExpEventListener {
     private FileWriter fw;
     private LinkedList<Long> timeLogs;
     private int count = 0;
+    private boolean endFlag = false;
 
     private static final String OUT_PATH;
     private static final Logger LOG;
@@ -106,8 +107,8 @@ public class TermTester implements Runnable, ExpEventListener {
     public void run() {
         Random rand = new Random(System.currentTimeMillis());
 
-        //for (int termNum : new int[]{1, 10, 50, 100}) {
-        for (int termNum : new int[]{1}) {
+        for (int termNum : new int[]{1, 10, 50, 100}) {
+            LOG.log(Level.INFO, "Term testing...: {0} terms per device", termNum);
             Session s = HibernateUtil.getSessionFactory().openSession();
             Transaction t = null;
             try {
@@ -121,34 +122,24 @@ public class TermTester implements Runnable, ExpEventListener {
             q.setString("udn", duppd.getUDN());
             Device d = (Device)q.uniqueResult();
             Sensor sens = (Sensor)d.getSensors().toArray()[0];
+            String sensName = d.getRoom().getName()+"::"+d.getName()+"::"+sens.getSensorType().getName();
 
             /* 条件文を設定 */
             Set ts =  sens.getTerms();
             if (ts.size() != termNum) {
-                ts.clear();
-                sens.setTerms(ts);
-
-                try {
-                    t = s.beginTransaction();
-                    s.update(sens);
-                    t.commit();
-                } catch (HibernateException ex) {
-                    if (t != null) t.rollback();
-                }
-                t = null;
-
-                for (int i = 0; i < termNum; i++) {
+                for (int i = ts.size(); i < termNum; i++) {
                     Term term = new Term();
                     term.setUser((User)s.load(User.class, 2));
                     Set<Sensor> senss = term.getSensors();
                     senss.addAll(d.getSensors());
                     term.setSensors(senss);
-                    term.setTerm(d.getRoom().getName()+"::"+d.getName()+"::"+sens.getSensorType().getName()+" > 36.0");
+                    term.setTerm(sensName+" > "+(40.0-(0.05*(i+1))));
 
                     try {
                         t = s.beginTransaction();
                         s.save(term);
                         t.commit();
+                        LOG.log(Level.INFO, "New term is added: {0}", term.getTerm());
                     } catch (HibernateException ex) {
                         LOG.log(Level.WARNING, "Failed to add new term", ex);
                         if (t != null) t.rollback();
@@ -159,29 +150,25 @@ public class TermTester implements Runnable, ExpEventListener {
             s.close();
 
             /* センサ値の切り替え（マッチイベントの発生） */
+            LOG.log(Level.INFO, "Start measuring {0} times", count);
             for (int i = 0; i < count; i++) {
                 try {
-                    Thread.sleep(rand.nextInt(60)*1000);
+                    Thread.sleep((rand.nextInt(9)+1)*1000);
                 } catch (InterruptedException e) {}
 
-                LOG.log(Level.INFO, "[{0}] Fire term event", i+1);
+                LOG.log(Level.FINE, "[{0}] Fire term event", i+1);
                 timeLogs.add(System.currentTimeMillis());
                 duppd.setTemperature(40.0f);
 
                 try {
-                    Thread.sleep(rand.nextInt(3)*1000);
+                    Thread.sleep((rand.nextInt(2)+1)*1000);
                 } catch (InterruptedException e) {}
 
                 duppd.setTemperature(24.0f);
             }
-
-            try {
-                fw.flush();
-                fw.close();
-            } catch (IOException e) {
-            }
-            fw = null;
+            LOG.info("Finish measuring");
         }
+        endFlag = true;
     }
 
     @Override public void onReceiveCommand(String mediumId) {}
@@ -195,6 +182,15 @@ public class TermTester implements Runnable, ExpEventListener {
             fw.flush();
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to save file", e);
+        }
+
+        if (endFlag) {
+            try {
+                fw.flush();
+                fw.close();
+            } catch (IOException e) {
+            }
+            fw = null;
         }
     }
 }

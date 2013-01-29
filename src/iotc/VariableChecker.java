@@ -75,6 +75,7 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
             }
         }
 
+        boolean fired = false;
         if (!terms.containsKey(key)) return;
         for (Term t : terms.get(key)) {
             //TODO: 複数の変数に対応できるように要修正
@@ -105,14 +106,16 @@ public class VariableChecker implements UPnPEventListener, DBEventListener {
                     Log l = new Log();
 
                     SMediumMap.get(iotc.medium.Twitter.class).send(null, t.getUser(), MessageFormat.format(rb.getString("NotificationMessage"), ts));
-                    if (listener != null) {
-                        listener.onCommandComplete(String.valueOf(System.currentTimeMillis()));
-                    }
+                    fired = true;
+
                     fireFlags.add(t.getId());
                 } else {
                     fireFlags.remove(t.getId());
                 }
             }
+        }
+        if (fired && listener != null) {
+            listener.onCommandComplete(String.valueOf(System.currentTimeMillis()));
         }
     }
 
