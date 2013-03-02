@@ -76,6 +76,7 @@ CREATE TABLE `command` (
     `device_id` integer unsigned NOT NULL,
     `name` varchar(255) NOT NULL,
     `type` integer(1) NOT NULL,
+    `st_type` integer(1) NOT NULL,
     `power` integer(2) NOT NULL,
     `command` text NOT NULL,
     `alias_name` varchar(255),

@@ -1,6 +1,7 @@
 package iotc.parser;
 
 import iotc.Identification;
+import iotc.UPnPDevices;
 import iotc.common.UPnPException;
 import iotc.db.*;
 import iotc.medium.Medium;
@@ -50,6 +51,15 @@ public class CommandExpression {
                 UPnPRemoteAction uppra = EntityMapUtil.dbToUPnP(c);
                 if (!uppra.invoke()) {
                     throw new UPnPException("UPnPRemoteAction invocation failed");
+                } else {
+                    // 状態変化が起こるコマンドを実行したときは状態を変更
+                    if (c.getStType() != CommandStatusType.NONE.getId()) {
+                        if (c.getStType() != CommandStatusType.TOGGLE.getId()) {
+                            UPnPDevices.getInstance().setDeviceState(c.getDevice().getUdn(), (c.getStType()==CommandStatusType.ON.getId()));
+                        } else {
+                            UPnPDevices.getInstance().toggleDeviceState(c.getDevice().getUdn());
+                        }
+                    }
                 }
 
                 StringBuilder sb = new StringBuilder();
@@ -151,6 +161,18 @@ public class CommandExpression {
         SET_ALIAS       (rb.getString("ct.SET_ALIAS.regex"), "alias", "device", "command") {
             @Override protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
                 // TODO: Implement this
+            }
+        },
+        /** 現在のデバイスの状態を取得 */
+        GET_STATE       (rb.getString("ct.GET_STATE.regex"), "device") {
+            @Override
+            protected void process(Medium medium, Log log, Session session, Map<String, Object> args) throws Exception {
+                Identification id = getIdentification(args);
+
+                boolean state = UPnPDevices.getInstance().getDeviceState(id.getDevice().getUdn());
+                String stateStr = (state)?rb.getString("ct.GET_STATE.on"):rb.getString("ct.GET_STATE.off");
+
+                medium.send(log, log.getUser(), MessageFormat.format(rb.getString("ct.GET_STATE.success"), id.toString(), stateStr));
             }
         },
         /** センサ一覧を返す */

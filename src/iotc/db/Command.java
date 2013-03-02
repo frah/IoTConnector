@@ -34,6 +34,7 @@ public class Command  implements java.io.Serializable {
      private Device device;
      private String name;
      private int type;
+     private int stType;
      private int power;
      private String command;
      private String aliasName;
@@ -98,6 +99,14 @@ public class Command  implements java.io.Serializable {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    @Column(name="st_type", nullable = false)
+    public int getStType() {
+        return this.stType;
+    }
+    public void setStType(int type) {
+        this.stType = type;
     }
 
     @Column(name="power", nullable=false)

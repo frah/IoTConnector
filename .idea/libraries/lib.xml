@@ -6,7 +6,6 @@
       <root url="jar://$PROJECT_DIR$/lib/ns.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/jparsec-2.0.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/mysql-connector-java-5.1.13-bin.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/clinkx.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/guava-11.0.2.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/xercesImpl.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/twitter4j-core-3.0.2.jar!/" />
@@ -14,9 +13,12 @@
       <root url="jar://$PROJECT_DIR$/lib/commons-codec-1.7.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/twitter4j-stream-3.0.2.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/collections-generic-4.01.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/clink170b_ns.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/clink170b.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/clinkx.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/clink170b.jar!/" />
+    </SOURCES>
   </library>
 </component>

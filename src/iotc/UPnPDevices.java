@@ -26,6 +26,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
     /* UPnP */
     private final UPnPControlPoint controlPoint;
     private HashMap<String, UPnPRemoteDevice> availableDevices;
+    private HashMap<String, Boolean> deviceStates;
     private ArrayList<UPnPEventListener> listeners;
 
     private static final Logger LOG;
@@ -44,6 +45,7 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
     }
     private UPnPDevices() {
         availableDevices = new HashMap();
+        deviceStates = new HashMap();
         listeners = new ArrayList();
         DBEventListenerManager.getInstance().addListener(this, "Sensor");
 
@@ -85,6 +87,37 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
     }
 
     /**
+     * デバイスの状態を設定する
+     * @param udn UPnPデバイスのUDN
+     * @param state 設定する状態
+     */
+    public void setDeviceState(String udn, boolean state) {
+        if (deviceStates.containsKey(udn)) {
+            deviceStates.put(udn, state);
+        }
+    }
+
+    /**
+     * デバイスの状態を切り替える
+     * @param udn UPnPデバイスのUDN
+     */
+    public void toggleDeviceState(String udn) {
+        if (deviceStates.containsKey(udn)) {
+            deviceStates.put(udn, !deviceStates.get(udn));
+        }
+    }
+
+    /**
+     * デバイスの状態を取得する
+     * @param udn UPnPデバイスのUDN
+     * @return 現在の状態
+     */
+    public boolean getDeviceState(String udn) {
+        if (deviceStates.containsKey(udn)) return deviceStates.get(udn);
+        return false;
+    }
+
+    /**
      * 新しいUPnPデバイスを検出した際に呼ばれる
      * <p>DBを参照し，既に登録されているデバイスであればそのレコードを#onDetectKnownDevice()イベントで返す．</p>
      * <p>登録がなければ，#onDetectNewDevice()を呼ぶ</p>
@@ -105,6 +138,11 @@ public class UPnPDevices implements UPnPDeviceChangeListener, DBEventListener {
         }
 
         availableDevices.put(upprd.getUDN(), upprd);
+        /*
+        TODO: state管理の実装
+            現在 → 検出時は電源OFFで固定
+         */
+        deviceStates.put(upprd.getUDN(), false);
 
         // Subscribe all variable of device
         if (d != null) {

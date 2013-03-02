@@ -16,6 +16,9 @@
         <property name="type" type="int">
             <column name="type" not-null="true" />
         </property>
+        <property name="stType" type="int">
+            <column name="st_type" not-null="true" />
+        </property>
         <property name="power" type="int">
             <column name="power" not-null="true" />
         </property>
